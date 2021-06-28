@@ -50,6 +50,11 @@ public class KafkaUtilities {
         props.put(ProducerConfig.CLIENT_ID_CONFIG, "flink-producer");
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, IntegerSerializer.class.getName());
+
+
+
+
+
         Producer<String, Integer> producer = new KafkaProducer<String, Integer>(props);
         producer.send(new ProducerRecord<String, Integer>(topic, key, 11), new Callback() {
             @Override

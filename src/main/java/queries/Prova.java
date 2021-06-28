@@ -1,25 +1,40 @@
 package queries;
 
 import org.apache.flink.api.common.functions.FlatMapFunction;
+import org.apache.flink.api.common.serialization.SimpleStringSchema;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.windowing.assigners.TumblingProcessingTimeWindows;
 import org.apache.flink.streaming.api.windowing.time.Time;
+import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
 import org.apache.flink.util.Collector;
 
-public class Prova {
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
 
-	public static void main(String[] args) {
+public class Prova {
+	static ClassLoader loader = Thread.currentThread().getContextClassLoader();
+
+	public static void main(String[] args) throws IOException {
 		
 		StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+		InputStream kafka_file = loader.getResourceAsStream("kafka.properties");
+		Properties props = new Properties();
+		props.load(kafka_file);
+		//props.setProperty("bootstrap.servers", "localhost:9092");
+		props.setProperty("group.id", "test-consumer");
+		DataStream<String> dataStream = env
+				.addSource(new FlinkKafkaConsumer<>("quickstart-events", new SimpleStringSchema(), props));
 
-        DataStream<Tuple2<String, Integer>> dataStream = env
+
+		/*DataStream<Tuple2<String, Integer>> dataStream = env
         		.readTextFile("../prj2_dataset.csv")
                 .flatMap(new Splitter())
                 .keyBy(value -> value.f0)
                 .window(TumblingProcessingTimeWindows.of(Time.seconds(1)))
-                .sum(1);
+                .sum(1);*/
 
         dataStream.print();
 
