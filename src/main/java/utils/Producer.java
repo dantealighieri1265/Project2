@@ -21,7 +21,7 @@ import java.util.concurrent.ExecutionException;
 
 public class Producer {
     private static final String COMMA_DELIMITER = ",";
-    public static String TOPIC1 = "query1";
+    public static String TOPIC = "query";
     private static long TOTAL_MILL_TIME = 1 * 10 * 1000;
 
     public static final SimpleDateFormat[] dateFormats = {new SimpleDateFormat("dd/MM/yy HH:mm"),
@@ -111,7 +111,7 @@ public class Producer {
                 line++;
                 long finalSleep = sleep;
                 int finalLine = line;
-                producer.send(new ProducerRecord<>(TOPIC1, key, val), (m, e) -> {
+                producer.send(new ProducerRecord<>(TOPIC,0, key, key, val), (m, e) -> {
                     if (e != null) {
                         e.printStackTrace();
                     } else {

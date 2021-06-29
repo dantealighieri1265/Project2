@@ -1,5 +1,9 @@
 package utils;
 
+import org.apache.flink.api.common.eventtime.WatermarkGenerator;
+import org.apache.flink.api.common.eventtime.WatermarkGeneratorSupplier;
+import org.apache.flink.api.common.eventtime.WatermarkOutput;
+
 public class ShipData {
     String tripId;
     String shipId;
@@ -9,6 +13,7 @@ public class ShipData {
     String cell;
     String shipType;
     long dateAsTimestamp;
+    String sea;
 
     public final static double lonSeparation = 11.797697;
     private static final double minLat = 32.0;
@@ -26,8 +31,9 @@ public class ShipData {
         this.timestamp = timestamp;
         this.shipType = shipType(shipType);
         this.cell = evaluateCell(lat, lon);
+        this.sea = evaluateSea(lon);
     }
-    public ShipData(String tripId, String shipId, double lon, double lat, long timestamp, int shipType, long dateAsTimestamp) {
+    /*public ShipData(String tripId, String shipId, double lon, double lat, long timestamp, int shipType, long dateAsTimestamp) {
         this.tripId = tripId;
         this.shipId = shipId;
         this.lon = lon;
@@ -36,8 +42,18 @@ public class ShipData {
         this.shipType = shipType(shipType);
         this.cell = evaluateCell(lat, lon);
         this.dateAsTimestamp = dateAsTimestamp;
-    }
 
+    }*/
+
+
+    private String evaluateSea(double lon) {
+
+        if (lon<getLonSeparation()){
+            return "WEST";
+        } else {
+            return "EST";
+        }
+    }
 
 
     private String evaluateCell(double lat, double lon){
@@ -68,10 +84,10 @@ public class ShipData {
         }
     }
 
-    public static void main(String[] args) {
-        ShipData shipData = new ShipData("a", "s", -6, 32, 4, 45, 5);
-        System.out.println(shipData.cell);
-    }
+    /*public static void main(String[] args) {
+        ShipData shipData = new ShipData("a", "s", -6, 32, 4, "45");
+        System.out.println(shipData.sea);
+    }*/
 
     public String getTripId() {
         return tripId;
@@ -163,5 +179,13 @@ public class ShipData {
 
     public static int getStepsLon() {
         return stepsLon;
+    }
+
+    public String getSea() {
+        return sea;
+    }
+
+    public void setSea(String sea) {
+        this.sea = sea;
     }
 }
