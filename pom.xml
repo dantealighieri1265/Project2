@@ -26,6 +26,11 @@
 		  <artifactId>flink-connector-kafka_2.11</artifactId>
 		  <version>1.13.0</version>
 	  </dependency>
+	  <dependency>
+		  <groupId>org.sonatype.nexus.bundles</groupId>
+		  <artifactId>org.sonatype.nexus.bundles.elasticsearch</artifactId>
+		  <version>3.26.1-02</version>
+	  </dependency>
   </dependencies>
 
   <build>

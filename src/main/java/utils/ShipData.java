@@ -4,6 +4,8 @@ import org.apache.flink.api.common.eventtime.WatermarkGenerator;
 import org.apache.flink.api.common.eventtime.WatermarkGeneratorSupplier;
 import org.apache.flink.api.common.eventtime.WatermarkOutput;
 
+import java.util.TreeMap;
+
 public class ShipData {
     String tripId;
     String shipId;
@@ -15,7 +17,7 @@ public class ShipData {
     long dateAsTimestamp;
     String sea;
 
-    public final static double lonSeparation = 11.797697;
+    private final static double lonSeparation = 11.797697;
     private static final double minLat = 32.0;
     private static final double maxLat = 45.0;
     private static final int stepsLat = 10;
@@ -49,8 +51,10 @@ public class ShipData {
     private String evaluateSea(double lon) {
 
         if (lon<getLonSeparation()){
+            //System.out.println(lon+", "+lat+", "+"WEST");
             return "WEST";
         } else {
+            //System.out.println(lon+", "+lat+", "+"EST");
             return "EST";
         }
     }
@@ -84,10 +88,21 @@ public class ShipData {
         }
     }
 
-    /*public static void main(String[] args) {
-        ShipData shipData = new ShipData("a", "s", -6, 32, 4, "45");
-        System.out.println(shipData.sea);
-    }*/
+    public static void main(String[] args) {
+        TreeMap<Integer, Integer> m = new TreeMap<>();
+        m.put(1,1);
+        m.put(2,2);
+        m.put(3,3);
+        m.put(4,4);
+        m.put(5,5);
+        for (int i=0; i<3; i++){
+            String cellId = m.values()
+                    .stream()
+                    .skip(i)
+                    .findFirst().get().toString();
+            System.out.println(cellId);
+        }
+    }
 
     public String getTripId() {
         return tripId;

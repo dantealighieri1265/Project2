@@ -5,10 +5,6 @@ import java.util.Map;
 
 public class Query2Result {
 
-
-
-
-
     private LocalDateTime startDate;
     private LocalDateTime endDate;
     private String cellId;
@@ -93,4 +89,6 @@ public class Query2Result {
                 ", countEstPM=" + countEstPM +
                 '}';
     }
+
+
 }
