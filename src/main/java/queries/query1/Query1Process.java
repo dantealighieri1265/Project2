@@ -24,4 +24,8 @@ public class Query1Process
         query1Result.setCellId(key);
         collector.collect(query1Result);
     }
+
+    public static void main(String[] args) {
+        System.out.println(Instant.ofEpochMilli(1431656219899L).atZone(ZoneId.systemDefault()).toLocalDateTime());
+    }
 }

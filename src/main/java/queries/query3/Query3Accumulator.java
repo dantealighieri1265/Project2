@@ -18,12 +18,15 @@ public class Query3Accumulator implements Serializable {
     }
 
     public static void main(String[] args) {
+
         double l = GeoDistanceUtils.vincentyDistance(0.0,0.0, 50.0,0.0);
         System.out.println(l);
     }
 
     public void add(double lon, double lat) {
         if(!Double.isNaN(getLon()) && !Double.isNaN(getLat())){
+            //todo semplicemente vuole la distanza euclidea forse
+            //double linearDistance = GeoDistanceUtils.linearDistance(new double[]{getLon(), getLat()}, new double[]{lon, lat});
             double linearDistance = GeoDistanceUtils.vincentyDistance(getLon(), getLat(), lon, lat);
             setDistance(linearDistance);
         }

@@ -30,50 +30,7 @@ import java.util.Properties;
 import java.util.TreeMap;
 
 public class Query3 {
-
-
-    public static class MyThread extends Thread {
-
-        public void run(){
-            System.out.println("MyThread running");
-            Producer.main(null);
-        }
-    }
-
-    public static void main(String[] args) {
-        Query3.MyThread myThread = new Query3.MyThread();
-        myThread.start();
-        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-        Properties props = KafkaProperties.getConsumerProperties("Query3Consumer");
-        KafkaProperties.createTopic(KafkaProperties.TOPIC, props);
-
-        FlinkKafkaConsumer<String> consumer = new FlinkKafkaConsumer<>(KafkaProperties.TOPIC,
-                new SimpleStringSchema(), props);
-        consumer.assignTimestampsAndWatermarks(WatermarkStrategy.forBoundedOutOfOrderness(Duration.ofMillis(100)));
-
-        DataStream<ShipData> dataStream = env
-                .addSource(consumer)
-                .map((MapFunction<String, ShipData>) s -> {
-                    String[] values = s.split(",");
-                    String dateString = values[7];
-                    Long timestamp = null;
-                    for (SimpleDateFormat dateFormat : Producer.dateFormats) {
-                        try {
-                            timestamp = dateFormat.parse(dateString).getTime();
-                            break;
-                        } catch (ParseException ignored) {
-                        }
-                    }
-                    if (timestamp == null)
-                        throw new NullPointerException();
-
-                    //System.out.println(dateString+", "+timestamp+", "+ Instant.ofEpochMilli(timestamp).atZone(ZoneId.systemDefault()).toLocalDateTime());
-                    return new ShipData(values[0], Integer.parseInt(values[1]), Double.parseDouble(values[3]),
-                            Double.parseDouble(values[4]), timestamp, values[10]);
-                }).filter((FilterFunction<ShipData>) shipData -> shipData.getLon() >= ShipData.getMinLon() &&
-                        shipData.getLon() <= ShipData.getMaxLon() && shipData.getLat() >= ShipData.getMinLat() &&
-                        shipData.getLat() <= ShipData.getMaxLat());
-
+    public static void run(DataStream<ShipData> dataStream){
         StreamingFileSink<String> sinkOneHour = SinkUtils.createStreamingFileSink("Query3OutputOneHour");
         StreamingFileSink<String> sinkTw0Hour = SinkUtils.createStreamingFileSink("Query3OutputTwoHour");
 
@@ -88,15 +45,6 @@ public class Query3 {
                 windowAll(TumblingEventTimeWindows.of(Time.hours(2))).process(new Query3SortProcess()).
                 map((MapFunction<TreeMap<Double, List<Query3Result>>, String>) SinkUtils::createCSVQuery3).
                 addSink(sinkTw0Hour).setParallelism(1);
-
-        try {
-            env.execute("Query3");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
-
-
-
 
 }

@@ -35,6 +35,12 @@ public class ShipData {
         this.cell = evaluateCell(lat, lon);
         this.sea = evaluateSea(lon);
     }
+
+    public ShipData(double lon, double lat) {
+        this.lon = lon;
+        this.lat = lat;
+        this.cell = evaluateCell(lat, lon);
+    }
     /*public ShipData(String tripId, String shipId, double lon, double lat, long timestamp, int shipType, long dateAsTimestamp) {
         this.tripId = tripId;
         this.shipId = shipId;
@@ -75,6 +81,25 @@ public class ShipData {
 
         return ""+latId + lonId;
     }
+    public static void main(String[] args) {
+        ShipData shipData = new ShipData(2.171,41.31467);
+        System.out.println(shipData.getCell());
+        /*TreeMap<Integer, Integer> m = new TreeMap<>();
+        m.put(1,1);
+        m.put(2,2);
+        m.put(3,3);
+        m.put(4,4);
+        m.put(5,5);
+        for (int i=0; i<3; i++){
+            String cellId = m.values()
+                    .stream()
+                    .skip(i)
+                    .findFirst().get().toString();
+            System.out.println(cellId);
+        }*/
+    }
+
+
 
     private String shipType(int shipType){
         if(shipType == 35){
@@ -88,21 +113,7 @@ public class ShipData {
         }
     }
 
-    public static void main(String[] args) {
-        TreeMap<Integer, Integer> m = new TreeMap<>();
-        m.put(1,1);
-        m.put(2,2);
-        m.put(3,3);
-        m.put(4,4);
-        m.put(5,5);
-        for (int i=0; i<3; i++){
-            String cellId = m.values()
-                    .stream()
-                    .skip(i)
-                    .findFirst().get().toString();
-            System.out.println(cellId);
-        }
-    }
+
 
     public String getTripId() {
         return tripId;

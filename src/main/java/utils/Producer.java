@@ -21,7 +21,7 @@ import java.util.concurrent.ExecutionException;
 
 public class Producer {
     private static final String COMMA_DELIMITER = ",";
-    private static final long TOTAL_MILL_TIME = 1 * 10 * 1000;
+    private static final long TOTAL_MILL_TIME = 1*10* 1000;
     public static final SimpleDateFormat[] dateFormats = {new SimpleDateFormat("dd/MM/yy HH:mm"),
             new SimpleDateFormat("dd-MM-yy HH:mm")};
     private static final String FILE_NAME = "prj2_dataset.csv";
@@ -37,6 +37,7 @@ public class Producer {
         /*for (List<String> l: records.values()){
             System.out.println(l);
         }*/
+
         kafka_injector(records);
         Instant end = Instant.now();
         System.out.println("Injection completed in " + Duration.between(start, end).toMillis() + "ms");
@@ -77,6 +78,7 @@ public class Producer {
 
     public static void kafka_injector(TreeMap<Long, List<String>> records){
         Properties props = KafkaProperties.getProducerProperties("Producer");
+        KafkaProperties.createTopic(KafkaProperties.TOPIC, props);
         org.apache.kafka.clients.producer.Producer<Long, String> producer = new KafkaProducer<>(props);
         Long key_prev = null;
         int line = 0;
