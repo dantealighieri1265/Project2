@@ -29,8 +29,8 @@ public class Query1 {
                 .filter((FilterFunction<ShipData>) shipData -> shipData.getLon() < ShipData.getLonSeparation());
 
 
-        StreamingFileSink<String> sinkWeekly = SinkUtils.createStreamingFileSink("Query1OutputWeekly");
-        StreamingFileSink<String> sinkMonthly = SinkUtils.createStreamingFileSink("Query1OutputMonthly");
+        StreamingFileSink<String> sinkWeekly = SinkUtils.createStreamingFileSink(SinkUtils.QUERY1_OUTPUT_WEEKLY);
+        StreamingFileSink<String> sinkMonthly = SinkUtils.createStreamingFileSink(SinkUtils.QUERY1_OUTPUT_MONTHLY);
 
         dataStream.keyBy(ShipData::getCell).window(TumblingEventTimeWindows.of(Time.days(7)))
                 .aggregate(new Query1Aggregator(), new Query1Process())

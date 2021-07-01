@@ -17,6 +17,13 @@ import java.util.concurrent.TimeUnit;
 
 public class SinkUtils {
 
+    public static final String QUERY1_OUTPUT_WEEKLY="/home/marco/Scrivania/Project2/Query1OutputWeekly";
+    public static final String QUERY1_OUTPUT_MONTHLY="/home/marco/Scrivania/Project2/Query1OutputMonthly";
+    public static final String QUERY2_OUTPUT_WEEKLY="/home/marco/Scrivania/Project2/Query2OutputWeekly";
+    public static final String QUERY2_OUTPUT_MONTHLY="/home/marco/Scrivania/Project2/Query2OutputMonthly";
+    public static final String QUERY3_OUTPUT_ONE_HOUR ="/home/marco/Scrivania/Project2/Query3OutputOneHour";
+    public static final String QUERY3_OUTPUT_TWO_HOUR ="/home/marco/Scrivania/Project2/Query3OutputTwoHour";
+
     public static StreamingFileSink<String> createStreamingFileSink(String name){
         return StreamingFileSink
                 .forRowFormat(new Path(name), new SimpleStringEncoder<String>("UTF-8"))

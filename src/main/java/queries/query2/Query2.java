@@ -23,8 +23,8 @@ import java.util.*;
 public class Query2 {
 
     public static void run(DataStream<ShipData> dataStream){
-        StreamingFileSink<String> sinkWeekly = SinkUtils.createStreamingFileSink("Query2OutputWeekly");
-        StreamingFileSink<String> sinkMonthly = SinkUtils.createStreamingFileSink("Query2OutputMonthly");
+        StreamingFileSink<String> sinkWeekly = SinkUtils.createStreamingFileSink(SinkUtils.QUERY2_OUTPUT_WEEKLY);
+        StreamingFileSink<String> sinkMonthly = SinkUtils.createStreamingFileSink(SinkUtils.QUERY2_OUTPUT_MONTHLY);
 
         //todo anziché raggruppare solo per cellId si potrebbe successivamente raggruppare anche per [sea,time]
         // il problema è che dopo la prima aggreagte i due valori non sono presenti. Bisognerebbe aggiungere
