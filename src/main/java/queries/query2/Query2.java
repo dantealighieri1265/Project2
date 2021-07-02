@@ -29,17 +29,19 @@ public class Query2 {
         //todo anziché raggruppare solo per cellId si potrebbe successivamente raggruppare anche per [sea,time]
         // il problema è che dopo la prima aggreagte i due valori non sono presenti. Bisognerebbe aggiungere
         // tali parametri agli attributi di Query2Result
+
+        //todo si potrebbbe raggruppare direttamente per sea all'inizio
         dataStream.keyBy(ShipData::getCell).window(TumblingEventTimeWindows.of(Time.days(7))).
                 aggregate(new Query2Aggregator(), new Query2Process()).
                 windowAll(TumblingEventTimeWindows.of(Time.days(7))).process(new Query2SortProcess()).
-                map((MapFunction<List<TreeMap<String, Query2Result>>, String>) SinkUtils::createCSVQuery2).
+                map((MapFunction<List<TreeMap<Integer, List<Query2Result>>>, String>) SinkUtils::createCSVQuery2).
                 addSink(sinkWeekly).setParallelism(1);
 
 
         dataStream.keyBy(ShipData::getCell).window(TumblingEventTimeWindows.of(Time.days(30))).
                 aggregate(new Query2Aggregator(), new Query2Process()).
                 windowAll(TumblingEventTimeWindows.of(Time.days(30))).process(new Query2SortProcess()).
-                map((MapFunction<List<TreeMap<String, Query2Result>>, String>) SinkUtils::createCSVQuery2).
+                map((MapFunction<List<TreeMap<Integer, List<Query2Result>>>, String>) SinkUtils::createCSVQuery2).
                 addSink(sinkMonthly).setParallelism(1);
     }
 

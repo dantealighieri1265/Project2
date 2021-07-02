@@ -72,13 +72,13 @@ public class Producer {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        System.out.println(l.keySet()+", "+l.size());
+        //System.out.println(l.keySet()+", "+l.size());
         return records;
     }
 
     public static void kafka_injector(TreeMap<Long, List<String>> records){
         Properties props = KafkaProperties.getProducerProperties("Producer");
-        KafkaProperties.createTopic(KafkaProperties.TOPIC, props);
+        //KafkaProperties.createTopic(KafkaProperties.TOPIC, props);
         org.apache.kafka.clients.producer.Producer<Long, String> producer = new KafkaProducer<>(props);
         Long key_prev = null;
         int line = 0;

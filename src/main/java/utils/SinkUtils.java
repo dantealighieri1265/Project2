@@ -9,10 +9,7 @@ import queries.query2.Query2Result;
 import queries.query3.Query3Result;
 
 import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class SinkUtils {
@@ -95,27 +92,32 @@ public class SinkUtils {
         return String.valueOf(builder);
     }
 
-    public static String createCSVQuery2(List<TreeMap<String, Query2Result>> list){
+    public static String createCSVQuery2(List<TreeMap<Integer, List<Query2Result>>> list){
         StringBuilder builder = new StringBuilder();
         boolean atLest = false;
-        builder.append(list.get(0).firstEntry().getValue().getStartDate().toLocalDate());
+        builder.append(list.get(0).firstEntry().getValue().get(0).getStartDate().toLocalDate());
         builder.append(",");
         builder.append("West Mediterranean");
         builder.append(",");
         builder.append("AM");
         builder.append(",");
+
         for (int i=0; i<3; i++){
-            Optional<Query2Result> first = list.get(0).values()
+            Optional<List<Query2Result>> first = list.get(0).values()
                     .stream()
                     .skip(i)
                     .findFirst();
-            if (first.isPresent() && first.get().getCountWestAM()!=0) {
-                atLest = true;
-                String cellId = first.get().getCellId();
-                builder.append(cellId);
-                builder.append("-");
+            if (first.isPresent()) {
+                for (Query2Result result: first.get()){
+                    if (result.getCountWestAM()!=0){
+                        i++;
+                        atLest = true;
+                        String cellId = result.getCellId();
+                        builder.append(cellId);
+                        builder.append("-");
+                    }
+                }
             }
-
         }
         if (atLest)
             builder.deleteCharAt(builder.length()-1);
@@ -125,15 +127,20 @@ public class SinkUtils {
         builder.append("PM");
         builder.append(",");
         for (int i=0; i<3; i++){
-            Optional<Query2Result> first = list.get(1).values()
+            Optional<List<Query2Result>> first = list.get(1).values()
                     .stream()
                     .skip(i)
                     .findFirst();
-            if (first.isPresent() && first.get().getCountWestPM()!=0) {
-                atLest = true;
-                String cellId = first.get().getCellId();
-                builder.append(cellId);
-                builder.append("-");
+            if (first.isPresent()) {
+                for (Query2Result result: first.get()){
+                    if (result.getCountWestPM()!=0){
+                        i++;
+                        atLest = true;
+                        String cellId = result.getCellId();
+                        builder.append(cellId);
+                        builder.append("-");
+                    }
+                }
             }
         }
         if (atLest)
@@ -142,22 +149,27 @@ public class SinkUtils {
         builder.append("\n");
 
 
-        builder.append(list.get(0).firstEntry().getValue().getStartDate().toLocalDate());
+        builder.append(list.get(0).firstEntry().getValue().get(0).getStartDate().toLocalDate());
         builder.append(",");
         builder.append("Est Mediterranean");
         builder.append(",");
         builder.append("AM");
         builder.append(",");
         for (int i=0; i<3; i++){
-            Optional<Query2Result> first = list.get(2).values()
+            Optional<List<Query2Result>> first = list.get(2).values()
                     .stream()
                     .skip(i)
                     .findFirst();
-            if (first.isPresent() && first.get().getCountEstAM()!=0) {
-                atLest = true;
-                String cellId = first.get().getCellId();
-                builder.append(cellId);
-                builder.append("-");
+            if (first.isPresent()) {
+                for (Query2Result result: first.get()){
+                    if (result.getCountEstAM()!=0){
+                        i++;
+                        atLest = true;
+                        String cellId = result.getCellId();
+                        builder.append(cellId);
+                        builder.append("-");
+                    }
+                }
             }
         }
         if (atLest)
@@ -167,20 +179,24 @@ public class SinkUtils {
         builder.append("PM");
         builder.append(",");
         for (int i=0; i<3; i++){
-            Optional<Query2Result> first = list.get(3).values()
+            Optional<List<Query2Result>> first = list.get(3).values()
                     .stream()
                     .skip(i)
                     .findFirst();
-            if (first.isPresent() && first.get().getCountEstPM()!=0 ) {
-                atLest = true;
-                String cellId = first.get().getCellId();
-                builder.append(cellId);
-                builder.append("-");
+            if (first.isPresent()) {
+                for (Query2Result result: first.get()){
+                    if (result.getCountEstPM()!=0){
+                        i++;
+                        atLest = true;
+                        String cellId = result.getCellId();
+                        builder.append(cellId);
+                        builder.append("-");
+                    }
+                }
             }
         }
         if (atLest)
             builder.deleteCharAt(builder.length()-1);
-        atLest = false;
 
         return String.valueOf(builder);
     }
