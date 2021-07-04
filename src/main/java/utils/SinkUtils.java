@@ -73,14 +73,22 @@ public class SinkUtils {
         builder.append("\n");*/
         builder.append(treeMap.firstEntry().getValue().get(0).getStartDate());
         builder.append(",");
-        for (int i=0; i<5; i++){
+        int count = 0;
+        for (int i=0;;i++){//Solo per scorrere le TreeMap
+            if (count == 5)
+                break;
+            if (i >= treeMap.size()){
+                break;
+            }
             Optional<List<Query3Result>> first = treeMap.values()
                     .stream()
                     .skip(i)
                     .findFirst();
             if (first.isPresent()) {
                 for (Query3Result result: first.get()){
-                    i++;
+                    if (count == 5)
+                        break;
+                    count++;
                     builder.append(result.getTripId());
                     builder.append(",");
                     builder.append(result.getDistance());
@@ -101,21 +109,30 @@ public class SinkUtils {
         builder.append(",");
         builder.append("AM");
         builder.append(",");
-
-        for (int i=0; i<3; i++){
+        int count = 0;
+        for (int i=0; ;i++){
+            if (count == 3)
+                break;
+            if (i >=  list.get(0).size()){
+                break;
+            }
             Optional<List<Query2Result>> first = list.get(0).values()
                     .stream()
                     .skip(i)
-                    .findFirst();
+                    .findFirst();//valore associato al primo elemento della treemap
+
+            //tree map --> Count:ListResultStessaCount
             if (first.isPresent()) {
                 for (Query2Result result: first.get()){
-                    if (result.getCountWestAM()!=0){
-                        i++;
-                        atLest = true;
-                        String cellId = result.getCellId();
-                        builder.append(cellId);
-                        builder.append("-");
-                    }
+                    //se ho più di 3 elementi termino la classifica
+                    if (count == 3)
+                        break;
+                    count++;
+
+                    atLest = true;
+                    String cellId = result.getCellId();
+                    builder.append(cellId);
+                    builder.append("-");
                 }
             }
         }
@@ -123,24 +140,29 @@ public class SinkUtils {
             builder.deleteCharAt(builder.length()-1);
         atLest = false;
 
+
         builder.append(",");
         builder.append("PM");
         builder.append(",");
-        for (int i=0; i<3; i++){
+        for (int i=0; i<3;){
             Optional<List<Query2Result>> first = list.get(1).values()
                     .stream()
                     .skip(i)
                     .findFirst();
             if (first.isPresent()) {
                 for (Query2Result result: first.get()){
-                    if (result.getCountWestPM()!=0){
-                        i++;
-                        atLest = true;
-                        String cellId = result.getCellId();
-                        builder.append(cellId);
-                        builder.append("-");
-                    }
+                    //se ho più di 3 elementi termino la classifica
+                    if (i == 3)
+                        break;
+                    i++;
+
+                    atLest = true;
+                    String cellId = result.getCellId();
+                    builder.append(cellId);
+                    builder.append("-");
                 }
+            }else {
+                i++;
             }
         }
         if (atLest)
@@ -155,20 +177,30 @@ public class SinkUtils {
         builder.append(",");
         builder.append("AM");
         builder.append(",");
-        for (int i=0; i<3; i++){
+        count = 0;
+        for (int i=0; ;i++){
+            if (count == 3)
+                break;
+            if (i >=  list.get(0).size()){
+                break;
+            }
             Optional<List<Query2Result>> first = list.get(2).values()
                     .stream()
                     .skip(i)
-                    .findFirst();
+                    .findFirst();//valore associato al primo elemento della treemap
+
+            //tree map --> Count:ListResultStessaCount
             if (first.isPresent()) {
                 for (Query2Result result: first.get()){
-                    if (result.getCountEstAM()!=0){
-                        i++;
-                        atLest = true;
-                        String cellId = result.getCellId();
-                        builder.append(cellId);
-                        builder.append("-");
-                    }
+                    //se ho più di 3 elementi termino la classifica
+                    if (count == 3)
+                        break;
+                    count++;
+
+                    atLest = true;
+                    String cellId = result.getCellId();
+                    builder.append(cellId);
+                    builder.append("-");
                 }
             }
         }
@@ -178,20 +210,30 @@ public class SinkUtils {
         builder.append(",");
         builder.append("PM");
         builder.append(",");
-        for (int i=0; i<3; i++){
+        count = 0;
+        for (int i=0; ;i++){
+            if (count == 3)
+                break;
+            if (i >=  list.get(2).size()){
+                break;
+            }
             Optional<List<Query2Result>> first = list.get(3).values()
                     .stream()
                     .skip(i)
-                    .findFirst();
+                    .findFirst();//valore associato al primo elemento della treemap
+
+            //tree map --> Count:ListResultStessaCount
             if (first.isPresent()) {
                 for (Query2Result result: first.get()){
-                    if (result.getCountEstPM()!=0){
-                        i++;
-                        atLest = true;
-                        String cellId = result.getCellId();
-                        builder.append(cellId);
-                        builder.append("-");
-                    }
+                    //se ho più di 3 elementi termino la classifica
+                    if (count == 3)
+                        break;
+                    count++;
+
+                    atLest = true;
+                    String cellId = result.getCellId();
+                    builder.append(cellId);
+                    builder.append("-");
                 }
             }
         }

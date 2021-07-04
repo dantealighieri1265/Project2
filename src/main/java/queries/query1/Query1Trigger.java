@@ -5,7 +5,10 @@ import org.apache.flink.streaming.api.windowing.triggers.TriggerResult;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import utils.ShipData;
 
+import java.util.Timer;
+
 public class Query1Trigger extends Trigger<ShipData, TimeWindow> {
+    Timer timer = new Timer();
     @Override
     public TriggerResult onElement(ShipData shipData, long l, TimeWindow timeWindow, TriggerContext triggerContext) throws Exception {
         /*System.out.println("ts: "+shipData.getTimestamp());

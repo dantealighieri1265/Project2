@@ -25,6 +25,7 @@ public class Query2Process
         query2Result.setEndDate(Instant.ofEpochMilli(context.window().getEnd()).atZone(ZoneId.systemDefault()).toLocalDateTime());
         //System.out.println(new Date(context.window().getStart()));
         query2Result.setCellId(key);
+        //iterable.forEach(x -> System.out.println(x.toString()));
         collector.collect(query2Result);
     }
 }

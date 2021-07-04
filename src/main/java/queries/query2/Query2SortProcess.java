@@ -42,6 +42,13 @@ public class Query2SortProcess extends ProcessAllWindowFunction<Query2Result,
             List<Query2Result> listEstPM = estPM.computeIfAbsent(result.getCountEstPM(), k -> new ArrayList<>());
             listEstPM.add(result);
 
+            /*System.out.println("WEST-AM: "+listWestAM);
+            System.out.println("WEST-PM: "+listWestPM);
+            System.out.println("EST-AM: "+listEstAM);
+            System.out.println("EST-PM: "+listEstPM);
+
+            System.out.println("\n\n");*/
+
 
             /*//todo il formato non è parametrico. Se il numero di navi aumenta, non viene gestito
             westAM.put(String.format(Locale.ENGLISH, "%05d",result.getCountWestAM())+
@@ -59,6 +66,8 @@ public class Query2SortProcess extends ProcessAllWindowFunction<Query2Result,
         list.add(westPM);
         list.add(estAM);
         list.add(estPM);
+        list.forEach(x -> x.forEach((integer, query2Results) -> System.out.println("key: "+integer+"value: "+query2Results)));
+        System.out.println("list: "+list);
 
         collector.collect(list);
     }
