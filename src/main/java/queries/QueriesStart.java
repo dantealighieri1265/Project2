@@ -51,7 +51,8 @@ public class QueriesStart {
 
         FlinkKafkaConsumer<String> consumer = new FlinkKafkaConsumer<>(KafkaProperties.TOPIC,
                 new SimpleStringSchema(), props);
-        consumer.assignTimestampsAndWatermarks(WatermarkStrategy.forBoundedOutOfOrderness(Duration.ofMillis(100)));
+        consumer.assignTimestampsAndWatermarks(WatermarkStrategy.forBoundedOutOfOrderness(Duration.ofMillis(10*1000)));
+        //consumer.assignTimestampsAndWatermarks(WatermarkStrategy.withIdleness(Duration.ofMillis(15*1000)));
 
         DataStream<ShipData> dataStream = env
                 .addSource(consumer)

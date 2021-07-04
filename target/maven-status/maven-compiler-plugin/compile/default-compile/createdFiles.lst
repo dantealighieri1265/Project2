@@ -6,6 +6,7 @@ queries/query2/Query2Accumulator.class
 queries/query1/Query1Trigger.class
 queries/query2/Query2Result.class
 queries/query1/Query1.class
+queries/query1/FlinkStringToKafkaSerializer.class
 queries/query3/Query3SortProcess.class
 queries/query1/Query1Result.class
 utils/Producer.class

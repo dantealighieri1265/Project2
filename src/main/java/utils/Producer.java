@@ -20,8 +20,21 @@ import java.util.concurrent.ExecutionException;
 
 
 public class Producer {
+    static ClassLoader loader = Thread.currentThread().getContextClassLoader();
+    private static final String CONFIG = "config.properties";
+
+    public static int getReplayConfig() {
+        InputStream config_file = loader.getResourceAsStream(CONFIG);
+        Properties props = new Properties();
+        try {
+            props.load(config_file);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return Integer.parseInt(props.getProperty("replay_time_milli"));
+    }
     private static final String COMMA_DELIMITER = ",";
-    private static final long TOTAL_MILL_TIME = 1*10* 1000;
+    private static final long TOTAL_MILL_TIME = getReplayConfig();
     public static final SimpleDateFormat[] dateFormats = {new SimpleDateFormat("dd/MM/yy HH:mm"),
             new SimpleDateFormat("dd-MM-yy HH:mm")};
     private static final String FILE_NAME = "prj2_dataset.csv";

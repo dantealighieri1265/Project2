@@ -8,18 +8,20 @@ import queries.query1.Query1Result;
 import queries.query2.Query2Result;
 import queries.query3.Query3Result;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class SinkUtils {
 
-    public static final String QUERY1_OUTPUT_WEEKLY="/home/marco/Scrivania/Project2/Query1OutputWeekly";
-    public static final String QUERY1_OUTPUT_MONTHLY="/home/marco/Scrivania/Project2/Query1OutputMonthly";
-    public static final String QUERY2_OUTPUT_WEEKLY="/home/marco/Scrivania/Project2/Query2OutputWeekly";
-    public static final String QUERY2_OUTPUT_MONTHLY="/home/marco/Scrivania/Project2/Query2OutputMonthly";
-    public static final String QUERY3_OUTPUT_ONE_HOUR ="/home/marco/Scrivania/Project2/Query3OutputOneHour";
-    public static final String QUERY3_OUTPUT_TWO_HOUR ="/home/marco/Scrivania/Project2/Query3OutputTwoHour";
+    public static final String QUERY1_OUTPUT_WEEKLY="Query1OutputWeekly";
+    public static final String QUERY1_OUTPUT_MONTHLY="Query1OutputMonthly";
+    public static final String QUERY2_OUTPUT_WEEKLY="Query2OutputWeekly";
+    public static final String QUERY2_OUTPUT_MONTHLY="Query2OutputMonthly";
+    public static final String QUERY3_OUTPUT_ONE_HOUR ="Query3OutputOneHour";
+    public static final String QUERY3_OUTPUT_TWO_HOUR ="Query3OutputTwoHour";
 
     public static StreamingFileSink<String> createStreamingFileSink(String name){
         return StreamingFileSink
@@ -33,6 +35,9 @@ public class SinkUtils {
                 .build();
     }
 
+    //todo mettere l'header ai csv
+
+    //todo gestire gli zeri
     public static String createCSVQuery1(Query1Result query1Result){
         StringBuilder builder = new StringBuilder();
         builder.append(query1Result.getStartDate());
@@ -47,6 +52,71 @@ public class SinkUtils {
         });
         return builder.toString();
     }
+
+
+    public static String createCSVQuery2(List<TreeMap<Integer, List<Query2Result>>> list){
+        StringBuilder builder = new StringBuilder();
+        builder.append(list.get(0).firstEntry().getValue().get(0).getStartDate().toLocalDate());
+        builder.append(",");
+        builder.append("West Mediterranean");
+        builder.append(",");
+        builder.append("AM");
+        builder.append(",");
+        rankingBuilder(list, 0, builder);
+
+        builder.append(",");
+        builder.append("PM");
+        builder.append(",");
+        rankingBuilder(list, 1, builder);
+
+        builder.append("\n");
+        builder.append(list.get(0).firstEntry().getValue().get(0).getStartDate().toLocalDate());
+        builder.append(",");
+        builder.append("Est Mediterranean");
+        builder.append(",");
+        builder.append("AM");
+        builder.append(",");
+        rankingBuilder(list, 2, builder);
+
+        builder.append(",");
+        builder.append("PM");
+        builder.append(",");
+        rankingBuilder(list, 3, builder);
+
+        return String.valueOf(builder);
+    }
+
+    private static void rankingBuilder(List<TreeMap<Integer, List<Query2Result>>> list, int index, StringBuilder builder){
+        boolean atLest = false;
+        int count = 0;
+        for (int i=0; ;i++){
+            if (count == 3)
+                break;
+            if (i >=  list.get(index).size()){
+                break;
+            }
+            Optional<List<Query2Result>> first = list.get(index).values()
+                    .stream()
+                    .skip(i)
+                    .findFirst();//valore associato al primo elemento della treemap
+
+            if (first.isPresent()) {
+                for (Query2Result result: first.get()){
+                    if (count == 3)//se ho più di 3 elementi termino la classifica
+                        break;
+                    count++;
+                    atLest = true;
+                    String cellId = result.getCellId();
+                    builder.append(cellId);
+                    builder.append("-");
+                }
+            }
+        }
+        if (atLest)
+            builder.deleteCharAt(builder.length()-1);
+    }
+
+
     public static String createCSVQuery3(TreeMap<Double, List<Query3Result>> treeMap){
         StringBuilder builder = new StringBuilder();
         /*builder.append("timestamp");
@@ -97,149 +167,6 @@ public class SinkUtils {
             }
         }
         builder.deleteCharAt(builder.length()-1);
-        return String.valueOf(builder);
-    }
-
-    public static String createCSVQuery2(List<TreeMap<Integer, List<Query2Result>>> list){
-        StringBuilder builder = new StringBuilder();
-        boolean atLest = false;
-        builder.append(list.get(0).firstEntry().getValue().get(0).getStartDate().toLocalDate());
-        builder.append(",");
-        builder.append("West Mediterranean");
-        builder.append(",");
-        builder.append("AM");
-        builder.append(",");
-        int count = 0;
-        for (int i=0; ;i++){
-            if (count == 3)
-                break;
-            if (i >=  list.get(0).size()){
-                break;
-            }
-            Optional<List<Query2Result>> first = list.get(0).values()
-                    .stream()
-                    .skip(i)
-                    .findFirst();//valore associato al primo elemento della treemap
-
-            //tree map --> Count:ListResultStessaCount
-            if (first.isPresent()) {
-                for (Query2Result result: first.get()){
-                    //se ho più di 3 elementi termino la classifica
-                    if (count == 3)
-                        break;
-                    count++;
-
-                    atLest = true;
-                    String cellId = result.getCellId();
-                    builder.append(cellId);
-                    builder.append("-");
-                }
-            }
-        }
-        if (atLest)
-            builder.deleteCharAt(builder.length()-1);
-        atLest = false;
-
-
-        builder.append(",");
-        builder.append("PM");
-        builder.append(",");
-        for (int i=0; i<3;){
-            Optional<List<Query2Result>> first = list.get(1).values()
-                    .stream()
-                    .skip(i)
-                    .findFirst();
-            if (first.isPresent()) {
-                for (Query2Result result: first.get()){
-                    //se ho più di 3 elementi termino la classifica
-                    if (i == 3)
-                        break;
-                    i++;
-
-                    atLest = true;
-                    String cellId = result.getCellId();
-                    builder.append(cellId);
-                    builder.append("-");
-                }
-            }else {
-                i++;
-            }
-        }
-        if (atLest)
-            builder.deleteCharAt(builder.length()-1);
-        atLest = false;
-        builder.append("\n");
-
-
-        builder.append(list.get(0).firstEntry().getValue().get(0).getStartDate().toLocalDate());
-        builder.append(",");
-        builder.append("Est Mediterranean");
-        builder.append(",");
-        builder.append("AM");
-        builder.append(",");
-        count = 0;
-        for (int i=0; ;i++){
-            if (count == 3)
-                break;
-            if (i >=  list.get(0).size()){
-                break;
-            }
-            Optional<List<Query2Result>> first = list.get(2).values()
-                    .stream()
-                    .skip(i)
-                    .findFirst();//valore associato al primo elemento della treemap
-
-            //tree map --> Count:ListResultStessaCount
-            if (first.isPresent()) {
-                for (Query2Result result: first.get()){
-                    //se ho più di 3 elementi termino la classifica
-                    if (count == 3)
-                        break;
-                    count++;
-
-                    atLest = true;
-                    String cellId = result.getCellId();
-                    builder.append(cellId);
-                    builder.append("-");
-                }
-            }
-        }
-        if (atLest)
-            builder.deleteCharAt(builder.length()-1);
-        atLest = false;
-        builder.append(",");
-        builder.append("PM");
-        builder.append(",");
-        count = 0;
-        for (int i=0; ;i++){
-            if (count == 3)
-                break;
-            if (i >=  list.get(2).size()){
-                break;
-            }
-            Optional<List<Query2Result>> first = list.get(3).values()
-                    .stream()
-                    .skip(i)
-                    .findFirst();//valore associato al primo elemento della treemap
-
-            //tree map --> Count:ListResultStessaCount
-            if (first.isPresent()) {
-                for (Query2Result result: first.get()){
-                    //se ho più di 3 elementi termino la classifica
-                    if (count == 3)
-                        break;
-                    count++;
-
-                    atLest = true;
-                    String cellId = result.getCellId();
-                    builder.append(cellId);
-                    builder.append("-");
-                }
-            }
-        }
-        if (atLest)
-            builder.deleteCharAt(builder.length()-1);
-
         return String.valueOf(builder);
     }
 }

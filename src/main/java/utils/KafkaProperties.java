@@ -18,6 +18,12 @@ import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 
 public class KafkaProperties {
+    public static final String QUERY1_WEEKLY_TOPIC = "query1_weekly_output";
+    public static final String QUERY1_MONTHLY_TOPIC = "query1_monthly_output";
+    public static final String QUERY2_WEEKLY_TOPIC = "query2_weekly_output";
+    public static final String QUERY2_MONTHLY_TOPIC = "query2_monthly_output";
+    public static final String QUERY3_ONE_HOUR_TOPIC = "query3_one_hour_output";
+    public static final String QUERY3_TWO_HOUR_TOPIC = "query3_two_hour_output";
     static ClassLoader loader = Thread.currentThread().getContextClassLoader();
     private static final String CONFIG = "kafka.properties";
     public static String TOPIC = "query";
@@ -34,6 +40,19 @@ public class KafkaProperties {
         props.put(ProducerConfig.CLIENT_ID_CONFIG, producerName);
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, LongSerializer.class.getName());
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+        return props;
+
+    }
+    public static Properties getFlinkProducerProperties(String producerName){
+        InputStream kafka_file = loader.getResourceAsStream(CONFIG);
+        Properties props = new Properties();
+        try {
+            props.load(kafka_file);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        props.put(ProducerConfig.CLIENT_ID_CONFIG, producerName);
         return props;
 
     }
