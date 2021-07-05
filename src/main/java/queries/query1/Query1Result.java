@@ -1,12 +1,17 @@
 package queries.query1;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Map;
 
+/**
+ * Classe che raccoglie i risultati di output della prima query
+ */
 public class Query1Result {
 
-    private Map<String, Integer> map;
+    private Map<String, Integer> map; //(tipo nave - count)
+    private LocalDateTime startDate;
+    private LocalDateTime endDate;
+    private String cellId;
 
     public LocalDateTime getEndDate() {
         return endDate;
@@ -15,10 +20,6 @@ public class Query1Result {
     public void setEndDate(LocalDateTime endDate) {
         this.endDate = endDate;
     }
-
-    private LocalDateTime startDate;
-    private LocalDateTime endDate;
-    private String cellId;
 
     public Query1Result() {
     }

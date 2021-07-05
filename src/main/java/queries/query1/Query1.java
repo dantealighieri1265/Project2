@@ -19,10 +19,13 @@ import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 public class Query1 {
-
+    /**
+     *
+     * @param dataStreamNoFilter DataStream in ingresso su cui eseguire il processamento
+     */
     public static void run(DataStream<ShipData> dataStreamNoFilter){
 
-        DataStream<ShipData> dataStream = dataStreamNoFilter
+        DataStream<ShipData> dataStream = dataStreamNoFilter //filtraggio Mediterraneo Occidentale
                 .filter((FilterFunction<ShipData>) shipData -> shipData.getLon() < ShipData.getLonSeparation());
 
 
@@ -30,25 +33,29 @@ public class Query1 {
         StreamingFileSink<String> sinkMonthly = SinkUtils.createStreamingFileSink(SinkUtils.QUERY1_OUTPUT_MONTHLY);
 
         DataStream<String> dataStreamWeeklyOutput=dataStream.keyBy(ShipData::getCell).window(TumblingEventTimeWindows.of(Time.days(7)))
-                .aggregate(new Query1Aggregator(), new Query1Process())
-                .map(SinkUtils::createCSVQuery1);
+                .aggregate(new Query1Aggregator(), new Query1Process()) //accumulazione dei dati e conteggio per finestra
+                .map(SinkUtils::createCSVQuery1); //calcolo media e generazione risultati
 
+        //invio dei risultati su topic kafka
         Properties props = KafkaProperties.getFlinkProducerProperties("query1_output_producer");
         dataStreamWeeklyOutput.addSink(new FlinkKafkaProducer<>(KafkaProperties.QUERY1_WEEKLY_TOPIC,
                 (KafkaSerializationSchema<String>) (s, aLong) ->
                         new ProducerRecord<>(KafkaProperties.QUERY1_WEEKLY_TOPIC, s.getBytes(StandardCharsets.UTF_8)),
                 props, FlinkKafkaProducer.Semantic.EXACTLY_ONCE));
+        //generazione dei file di output
         dataStreamWeeklyOutput.addSink(sinkWeekly).setParallelism(1);
 
 
         DataStream<String> dataStreamMonthlyOutput=dataStream.keyBy(ShipData::getCell).window(TumblingEventTimeWindows.of(Time.days(30)))
-                .aggregate(new Query1Aggregator(), new Query1Process())
-                .map(SinkUtils::createCSVQuery1);
+                .aggregate(new Query1Aggregator(), new Query1Process()) //accumulazione dei dati e conteggio per finestra
+                .map(SinkUtils::createCSVQuery1); //calcolo media e generazione risultati
 
+        //invio dei risultati su topic kafka
         dataStreamMonthlyOutput.addSink(new FlinkKafkaProducer<>(KafkaProperties.QUERY1_MONTHLY_TOPIC,
                 (KafkaSerializationSchema<String>) (s, aLong) ->
                         new ProducerRecord<>(KafkaProperties.QUERY1_MONTHLY_TOPIC, s.getBytes(StandardCharsets.UTF_8)),
                 props, FlinkKafkaProducer.Semantic.EXACTLY_ONCE));
+        //generazione dei file di output
         dataStreamMonthlyOutput.addSink(sinkMonthly).setParallelism(1);
 
 

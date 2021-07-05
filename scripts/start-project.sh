@@ -1,6 +1,6 @@
 #!/bin/bash
 cd ..
-mvn clean package
+mvn clean package #da rimuovere
 cd docker || return
 docker-compose up -d
 cd ..

@@ -11,10 +11,15 @@ import java.time.format.DateTimeFormatter;
 
 public class Query1Process
         extends ProcessWindowFunction<Query1Result, Query1Result, String, TimeWindow> {
-
+    /**
+     * Recupera timestamp di apertura e chiusura della finestra e la chiave e li inserisce nell'output
+     * @param key chiave del raggruppamento byKey
+     * @param context contesto
+     * @param iterable elementi nella finestra
+     * @param collector risultati in uscita
+     */
     @Override
     public void process(String key, Context context, Iterable<Query1Result> iterable, Collector<Query1Result> collector) {
-        DateTimeFormatter formatters = DateTimeFormatter.ofPattern("yyyy/MM/dd hh:mm");
         Query1Result query1Result = iterable.iterator().next();
         //query1Outcome.setStartDate(new LocalDate(context.window().getStart()));
         query1Result.setStartDate(Instant.ofEpochMilli(context.window().getStart()).atZone(ZoneId.systemDefault()).toLocalDateTime());

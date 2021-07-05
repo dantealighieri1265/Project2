@@ -2,16 +2,16 @@ package queries.query1;
 
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 public class Query1Accumulator implements Serializable {
 
     //mappa (tiponave - count)
     private Map<String, Integer> map;
 
-
+    /**
+     * Costruttore: genera una mappa da aggiornare
+     */
     public Query1Accumulator(){
         this.map = new HashMap<>();
         this.map.put("35", 0);
@@ -30,29 +30,38 @@ public class Query1Accumulator implements Serializable {
         }
     }*/
 
+    /**
+     *
+     * @param shipType stringa contenente il codice relativo al tipo di nave
+     * @param value 1
+     */
     public void add(String shipType, Integer value){
         Integer count = map.get(shipType);
         if(count == null){
             count = value;
         }else{
-            count++;//update value
+            count++;
         }
         map.put(shipType, count);
     }
 
-    public Query1Accumulator merge(Query1Accumulator acc1, Query1Accumulator acc2){
+    /**
+     *
+     * @param acc1 accumulatore su cui mantenere i risultati
+     * @param acc2 accumulatore da unire ad acc1
+     */
+    public void merge(Query1Accumulator acc1, Query1Accumulator acc2){
         for (Map.Entry<String, Integer> entry : acc2.getMap().entrySet()) {
             String shipType = entry.getKey();
             Integer countAcc2 = entry.getValue();
-            if (countAcc2 == null)
+            if (countAcc2 == null) //evita NullPointer
                 countAcc2 = 0;
             //todo potrebbe essere nullo
             Integer countAcc1 = acc1.getMap().get(shipType);
-            if (countAcc1 == null)
+            if (countAcc1 == null) //evita NullPointer
                 countAcc1 = 0;
-            acc1.add(shipType, countAcc1+countAcc2);
+            acc1.add(shipType, countAcc1+countAcc2); //aggiornamento
         }
-        return acc1;
     }
 
     public Map<String, Integer> getMap() {

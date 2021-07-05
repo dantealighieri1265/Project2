@@ -4,9 +4,8 @@ kafka/KafkaUtilities$2.class
 kafka/KafkaUtilities.class
 queries/query2/Query2Accumulator.class
 queries/query1/Query1Trigger.class
-queries/query2/Query2Result.class
 queries/query1/Query1.class
-queries/query1/FlinkStringToKafkaSerializer.class
+queries/query2/Query2Result.class
 queries/query3/Query3SortProcess.class
 queries/query1/Query1Result.class
 utils/Producer.class
@@ -17,12 +16,12 @@ utils/KafkaProperties.class
 queries/query3/Query3Aggregator.class
 utils/SinkUtils.class
 queries/query3/Query3Result.class
-queries/query2/Query2Process.class
 queries/query1/Query1Accumulator.class
+queries/query2/Query2Process.class
 utils/ShipData.class
 queries/QueriesStart.class
-queries/query2/Query2Aggregator.class
 queries/query1/Query1Process.class
+queries/query2/Query2Aggregator.class
 queries/query2/Query2.class
 queries/query1/Query1Aggregator.class
 queries/query2/Query2SortProcess.class
