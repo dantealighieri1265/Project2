@@ -43,6 +43,7 @@ public class Query1Accumulator implements Serializable {
             count++;
         }
         map.put(shipType, count);
+
     }
 
     /**

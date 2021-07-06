@@ -15,6 +15,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
@@ -22,6 +24,7 @@ import java.util.concurrent.ExecutionException;
 public class Producer {
     static ClassLoader loader = Thread.currentThread().getContextClassLoader();
     private static final String CONFIG = "config.properties";
+    private static long firstTimestamp = 0;
 
     public static int getReplayConfig() {
         InputStream config_file = loader.getResourceAsStream(CONFIG);
@@ -38,11 +41,13 @@ public class Producer {
     public static final SimpleDateFormat[] dateFormats = {new SimpleDateFormat("dd/MM/yy HH:mm"),
             new SimpleDateFormat("dd-MM-yy HH:mm")};
     private static final String FILE_NAME = "prj2_dataset.csv";
+    private static String FIRST_JANUARY = "01/01";
 
 
     public static void main(String[] args) {
         Instant start = Instant.now();
         TreeMap<Long, List<String>> records = retrieve_file();
+        //calculateOffset(firstTimestamp);
         /*System.out.println(records.values().size());
         System.out.println(new Date(records.firstKey())+", "+new Date(records.lastKey()));
         System.out.println(records.firstKey() +", "+records.lastKey()+", "+(records.lastKey()-records.firstKey())/1000/60/60/24);
@@ -56,18 +61,44 @@ public class Producer {
         System.out.println("Injection completed in " + Duration.between(start, end).toMillis() + "ms");
     }
 
+    private static void calculateOffset(long firstTimestamp) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yy HH:mm");
+        LocalDateTime ldt= Instant.ofEpochMilli(firstTimestamp).atZone(ZoneId.systemDefault()).toLocalDateTime();
+        int year = ldt.getYear();
+        FIRST_JANUARY = FIRST_JANUARY+"/"+year+" 00:00";
+        long long_first_jan = 0;
+        try {
+            long_first_jan = dateFormat.parse(FIRST_JANUARY).getTime();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        long offset = firstTimestamp-long_first_jan;
+        InputStream config_file = loader.getResourceAsStream(CONFIG);
+        Properties props = new Properties();
+        try {
+            props.load(config_file);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        props.put("offset",offset);
+    }
+
     public static TreeMap<Long, List<String>> retrieve_file(){
         TreeMap<Long, List<String>> records = new TreeMap<>();
         TreeMap<String, Integer> l = new TreeMap<>();
         try (BufferedReader br = new BufferedReader(new FileReader(FILE_NAME))) {
             String line;
             boolean header = true;
+            boolean firstLine = true;
 
             while ((line = br.readLine()) != null) {
                 if (header){
                     header = false;
                     continue;
                 }
+
+
                 String[] values = line.split(COMMA_DELIMITER);
                 l.put(values[0], 1);
                 String timestamp = values[7];
@@ -75,6 +106,10 @@ public class Producer {
                 
                 for (SimpleDateFormat dateFormat: dateFormats) {
                     try {
+                        if (firstLine) {
+                            firstTimestamp = dateFormat.parse(timestamp).getTime();
+                            firstLine = false;
+                        }
                         long_timestamp = dateFormat.parse(timestamp).getTime();
                         break;
                     } catch (ParseException ignored) { }

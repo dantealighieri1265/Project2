@@ -254,3 +254,18 @@ jobmanager.execution.failover-strategy: region
 # Interval in milliseconds for refreshing the monitored directories.
 #historyserver.archive.fs.refresh-interval: 10000
 
+#==============================================================================
+# GRAPHITE
+#==============================================================================
+metrics.reporter.grph.factory.class: org.apache.flink.metrics.graphite.GraphiteReporterFactory
+metrics.reporter.grph.host: localhost
+metrics.reporter.grph.port: 2003
+metrics.reporter.grph.protocol: TCP
+metrics.reporter.grph.interval: 60 SECONDS
+metrics.scope.jm: applications.__ENVIRONMENT__.__APPLICATION__.<host>.jobmanager
+metrics.scope.jm.job: applications.__ENVIRONMENT__.__APPLICATION__.<host>.jobmanager.<job_name>
+metrics.scope.tm: applications.__ENVIRONMENT__.__APPLICATION__.<host>.taskmanager.<tm_id>
+metrics.scope.tm.job: applications.__ENVIRONMENT__.__APPLICATION__.<host>.taskmanager.<tm_id>.<job_name>
+metrics.scope.task: applications.__ENVIRONMENT__.__APPLICATION__.<host>.taskmanager.<tm_id>.<job_name>.<task_id>.<subtask_index>
+metrics.scope.operator: applications.__ENVIRONMENT__.__APPLICATION__.<host>.taskmanager.<tm_id>.<job_name>.<operator_id>.<subtask_index>
+metrics.latency.interval: 1

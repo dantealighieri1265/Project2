@@ -16,12 +16,19 @@ import java.util.concurrent.TimeUnit;
 
 public class SinkUtils {
 
-    public static final String QUERY1_OUTPUT_WEEKLY="Query1OutputWeekly";
-    public static final String QUERY1_OUTPUT_MONTHLY="Query1OutputMonthly";
-    public static final String QUERY2_OUTPUT_WEEKLY="Query2OutputWeekly";
-    public static final String QUERY2_OUTPUT_MONTHLY="Query2OutputMonthly";
-    public static final String QUERY3_OUTPUT_ONE_HOUR ="Query3OutputOneHour";
-    public static final String QUERY3_OUTPUT_TWO_HOUR ="Query3OutputTwoHour";
+    public static final String QUERY1_OUTPUT_WEEKLY="results/Query1OutputWeekly";
+    public static final String QUERY1_OUTPUT_MONTHLY="results/Query1OutputMonthly";
+    public static final String QUERY2_OUTPUT_WEEKLY="results/Query2OutputWeekly";
+    public static final String QUERY2_OUTPUT_MONTHLY="results/Query2OutputMonthly";
+    public static final String QUERY3_OUTPUT_ONE_HOUR ="results/Query3OutputOneHour";
+    public static final String QUERY3_OUTPUT_TWO_HOUR ="results/Query3OutputTwoHour";
+
+    public static final String QUERY1_OUTPUT_WEEKLY_BENCHMARK="benchmark/Query1OutputWeeklyBenchmark";
+    public static final String QUERY1_OUTPUT_MONTHLY_BENCHMARK="benchmark/Query1OutputMonthlyBenchmark";
+    public static final String QUERY2_OUTPUT_WEEKLY_BENCHMARK="benchmark/Query2OutputWeeklyBenchmark";
+    public static final String QUERY2_OUTPUT_MONTHLY_BENCHMARK="benchmark/Query2OutputMonthlyBenchmark";
+    public static final String QUERY3_OUTPUT_ONE_HOUR_BENCHMARK ="benchmark/Query3OutputOneHourBenchmark";
+    public static final String QUERY3_OUTPUT_TWO_HOUR_BENCHMARK ="benchmark/Query3OutputTwoHourBenchmark";
 
     public static StreamingFileSink<String> createStreamingFileSink(String name){
         return StreamingFileSink

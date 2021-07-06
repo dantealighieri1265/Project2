@@ -1,5 +1,6 @@
 package queries.query2;
 
+import benchmarks.BenchmarkMap;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.api.common.functions.MapFunction;
@@ -29,6 +30,8 @@ public class Query2 {
     public static void run(DataStream<ShipData> dataStream){
         StreamingFileSink<String> sinkWeekly = SinkUtils.createStreamingFileSink(SinkUtils.QUERY2_OUTPUT_WEEKLY);
         StreamingFileSink<String> sinkMonthly = SinkUtils.createStreamingFileSink(SinkUtils.QUERY2_OUTPUT_MONTHLY);
+        StreamingFileSink<String> sinkWeeklyMetrics = SinkUtils.createStreamingFileSink(SinkUtils.QUERY2_OUTPUT_WEEKLY_BENCHMARK);
+        StreamingFileSink<String> sinkMonthlyMetrics = SinkUtils.createStreamingFileSink(SinkUtils.QUERY2_OUTPUT_MONTHLY_BENCHMARK);
 
         //todo anziché raggruppare solo per cellId si potrebbe successivamente raggruppare anche per [sea,time]
         // il problema è che dopo la prima aggreagte i due valori non sono presenti. Bisognerebbe aggiungere
@@ -44,8 +47,9 @@ public class Query2 {
         dataStreamWeeklyOutput.addSink(new FlinkKafkaProducer<>(KafkaProperties.QUERY2_WEEKLY_TOPIC,
                 (KafkaSerializationSchema<String>) (s, aLong) ->
                         new ProducerRecord<>(KafkaProperties.QUERY2_WEEKLY_TOPIC, s.getBytes(StandardCharsets.UTF_8)),
-                props, FlinkKafkaProducer.Semantic.EXACTLY_ONCE));
-        dataStreamWeeklyOutput.addSink(sinkWeekly).setParallelism(1);
+                props, FlinkKafkaProducer.Semantic.EXACTLY_ONCE)).name("q2_weekly_kafka");
+        dataStreamWeeklyOutput.addSink(sinkWeekly).name("q2_weekly").setParallelism(1);
+        dataStreamWeeklyOutput.map(new BenchmarkMap()).addSink(sinkWeeklyMetrics).name("q2_weekly_bench").setParallelism(1);
 
 
         DataStream<String> dataStreamMonthlyOutput=dataStream.keyBy(ShipData::getCell).window(TumblingEventTimeWindows.of(Time.days(30))).
@@ -56,8 +60,9 @@ public class Query2 {
         dataStreamMonthlyOutput.addSink(new FlinkKafkaProducer<>(KafkaProperties.QUERY2_MONTHLY_TOPIC,
                 (KafkaSerializationSchema<String>) (s, aLong) ->
                         new ProducerRecord<>(KafkaProperties.QUERY2_MONTHLY_TOPIC, s.getBytes(StandardCharsets.UTF_8)),
-                props, FlinkKafkaProducer.Semantic.EXACTLY_ONCE));
-        dataStreamWeeklyOutput.addSink(sinkMonthly).setParallelism(1);
+                props, FlinkKafkaProducer.Semantic.EXACTLY_ONCE)).name("q2_monthly_kafka");
+        dataStreamMonthlyOutput.addSink(sinkMonthly).name("q2_monthly").setParallelism(1);
+        dataStreamMonthlyOutput.map(new BenchmarkMap()).addSink(sinkMonthlyMetrics).name("q2_monthly_bench").setParallelism(1);
     }
 
 

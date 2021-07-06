@@ -14,10 +14,9 @@ public class ShipData {
     long timestamp;
     String cell;
     String shipType;
-    long dateAsTimestamp;
     String sea;
 
-    private final static double lonSeparation = 11.797697;
+    private final static double lonSeparation = 11.797696;
     private static final double minLat = 32.0;
     private static final double maxLat = 45.0;
     private static final int stepsLat = 10;
@@ -169,14 +168,6 @@ public class ShipData {
 
     public void setShipType(String shipType) {
         this.shipType = shipType;
-    }
-
-    public long getDateAsTimestamp() {
-        return dateAsTimestamp;
-    }
-
-    public void setDateAsTimestamp(long dateAsTimestamp) {
-        this.dateAsTimestamp = dateAsTimestamp;
     }
 
     public static double getLonSeparation() {

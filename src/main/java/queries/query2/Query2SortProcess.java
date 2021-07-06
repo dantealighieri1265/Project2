@@ -66,8 +66,8 @@ public class Query2SortProcess extends ProcessAllWindowFunction<Query2Result,
         list.add(westPM);
         list.add(estAM);
         list.add(estPM);
-        list.forEach(x -> x.forEach((integer, query2Results) -> System.out.println("key: "+integer+"value: "+query2Results)));
-        System.out.println("list: "+list);
+        /*list.forEach(x -> x.forEach((integer, query2Results) -> System.out.println("key: "+integer+"value: "+query2Results)));*/
+        /*System.out.println("list: "+list);*/
 
         collector.collect(list);
     }

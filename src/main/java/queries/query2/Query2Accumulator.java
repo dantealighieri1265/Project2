@@ -25,8 +25,8 @@ public class Query2Accumulator implements Serializable {
     public static void main(String[] args) {
         LocalDateTime localDateTime = Instant.ofEpochMilli(1432055580000L).atZone(ZoneId.systemDefault()).toLocalDateTime();
         LocalDateTime noon = LocalDateTime.of(localDateTime.toLocalDate(), LocalTime.NOON);
-        System.out.println(localDateTime);
-        System.out.println(noon);
+        /*System.out.println(localDateTime);
+        System.out.println(noon);*/
     }
 
     public void add(String shipId, String sea, long date){

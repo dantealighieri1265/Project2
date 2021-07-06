@@ -98,142 +98,88 @@ impostarla come ​timestamp della relativa tupla alla
 pubblicazione sulla topica. 
 
 \subsection*{\textbf{Apache Kafka}}
-Kafka è il sistema di messaggistica di tipo ​publish-subscribe
+\emph{Kafka} è il sistema di messaggistica di tipo ​publish-subscribe
 utilizzato per l'ingestion di dati nei sistemi di processamento
-e per l'export dei risultati. Il ​cluster, realizzato con Docker
-Compose, prevede un​ container con Zookeeper, necessario
+e per l'export dei risultati. Il ​cluster, realizzato con \emph{Docker
+Compose}, prevede un​ container con \emph{Zookeeper}, necessario
 per la coordinazione, e altri tre​ container con la funzione di
-Kafka broker. Sono state create 16 topiche: una per le tuple
-in input a Flink, una per le tuple in input a Kafka Streams,
-sei per l'output della prima query (giornaliero, settimanale e
-mensile, rispettivamente per Flink e Kafka Streams), quattro
-per l'output della seconda ​query (giornaliero e settimanale,
-rispettivamente per Flink e Kafka Streams) e altrettante per
-quello della terza query. Per incrementare la tolleranza ai
-guasti, ogni Kafka ​topic è impostata per avere un grado di
-replicazione pari a 2 (una replica ​leader ed una replica
-follower) e, allo stesso tempo, una sola partizione. La scelta
+\emph{Kafka broker}. Sono state create 7 \emph{topiche}: una per le tuple
+in input a Flink, due per l'output della prima query (settimanale e
+mensile), due per l'output della seconda ​query (settimanale e mensile) e altrettante per quello della terza query (per un'ora e per due ore). Per incrementare la tolleranza ai guasti, ogni \emph{Kafka ​topic} è impostata per avere un grado di replicazione pari a 2 (una replica \emph{​leader} ed una replica
+\emph{follower}) e, allo stesso tempo, una sola partizione. La scelta
 della singola partizione è dovuta alla necessità di
 mantenere le tuple ordinate all’interno del sistema di
-messaggistica; in Kafka, infatti, la garanzie di ordinamento
+messaggistica; in \emph{Kafka}, infatti, la garanzie di ordinamento
 sono valide soltanto nell’ambito di una singola partizione.
+
+
+\subsection*{\textbf{Apache Flink}}
+\emph{Flink} \`{e} il framework di \emph{data stream processing} utilizzato per
+l'esecuzione delle tre query precedentemente descritte.
+I dati necessari al processamento sono presi direttamente
+dalla \emph{topica} query in \emph{Kafka}. L'\emph{event time} viene determinato in automatico da \emph{Flink} recuperandolo dal campo \emph{timestamp} del record \emph{Kafka}. Il flusso cos\`{i} ottenuto rappresenta lo ​ stream che le ​ query
+devono manipolare al fine di calcolare le statistiche
+richieste.
+Al fine di preprocessare i dati ed eseguire le \emph{query}, viene utilizzato \emph{Apache Flink} in locale, tramite lo script \texttt{\$FLINK\_HOME/bin/flink run}.
+Di seguito viene mostrata la topologia che sarà
+successivamente descritta più nel dettaglio.
+
 \begin{figure}[htbp]
 \includegraphics[scale=0.16]{Screenshot/Nifi.png}
 \caption{NiFi template}\label{figura:template}
 \label{fig}
 \end{figure}
 
-\subsection*{\textbf{HDFS}}
-\emph{HDFS} rappresenta il mezzo che permette l'archiviazione dei dati in maniera distribuita. Il servizio si compone di un nodo \emph{master} e tre nodi \emph{worker} con un livello di replicazione pari a 2. Tale servizio permette di rendere disponibili i dati su cui \emph{Spark} esegue la computazione e memorizza gli \emph{output} dell'analisi, che vengono, in seguito, esportati su \emph{HBase}, per eventuali analisi, manipolazione e rappresentazione dei dati. Il deployment del framework avviene attraverso l'utilizzo dell'immagine \emph{Docker} \emph{effeerre/hadoop}, istanziata su container. In seguito all'avvio del servizio, uno script permette di eseguire lo sturtup del \emph{Namenode} e dei \emph{Datanode}, e crea le directory \texttt{/data}, dove \emph{NiFi} inserisce i dati, e \texttt{/output}, in cui risiedono i risultati dell'analisi, concedendo i permessi di lettura, scrittura ed esecuzione.
 
-\subsection*{\textbf{Spark}}
-Al fine di preprocessare i dati ed eseguire le \emph{query}, viene utilizzato \emph{Apache Spark} in locale, tramite lo script \texttt{\$SPARK\_HOME/bin/spark-submit}. Oltre allo \emph{Spark Core}, che espone un set di API di \emph{trasformazioni} ed \emph{azioni}, \`{e} stata impiegata la libreria di \emph{Machine Learning} \emph{MLlib}, utile per effettuare \emph{clustering} sui risultati della terza \emph{query}.
-
-\subsection*{\textbf{HBase}}
-Hbase \`{e} stato utilizzato come datastore \emph{NoSQL} sul quale importare i risultati delle query, anche questo servizio \`{e} stato istanziato utilizzando un container \emph{Docker} realizzato,
-questa volta, a partire dall'immagine \emph{harisekhon/hbase}. Affinch\`{e} fosse possibile
-l'esportazione dei risultati da \emph{HDFS} a \emph{HBase}, \`{e} stata creata la classe \texttt{HBaseQueries.java} che permette la creazione delle tabelle e l'inserimento dei dati, sfruttando la classe \texttt{HBaseClient.java}. Quest'ultima contiene informazioni riguardo la configurazione di \emph{HBase} e \emph{Zookeeper}, e le principali operazioni di gestione del datastore.\\
 \section{\textbf{Query}}
+\par Al fine di effettuare le query \`{e} stato necessario uno step di preprocessamento. Lo stream in ingresso viene generato utilizzando un consumer che riceve i dati dalla topica \emph{query}. I \emph{record} vengono trasformati in oggetti di tipo \emph{ShipData} contenenti le informazioni necessarie al processamento delle richieste; in particolare viene definita la cella e la sezione del Mar Mediterraneo (Occidentale o Orientale) di appartenenza a partire dalle coordinate. Una operazione di filtraggio assicura che i dati rientrino nella porzione di mare indicata dalla traccia. Lo stream di oggetti \emph{ShipData} in uscita viene, in seguito, dato in ingresso alle topologie di processamento delle query.
 \subsection*{\textbf{Query 1}}
-Al fine di soddisfare la seguente \emph{query}, si \`{e} reso necessario l'utilizzo di due file, \textit{somministrazioni-vaccini-summary-latest.parquet} e \textit{punti-somministrazione-tipologia.parquet}. \par
-Tali file sono stati caricati in \texttt{Dataset} e trasformati in \texttt{JavaPairRDD}, considerando le sole colonne di interesse: \emph{data\_somministrazione}, \emph{area} e \emph{totale} per il primo e \emph{area} per il secondo. \`{E} stato effettuata la \emph{trasformazione} \emph{"filter"}, scartando i dati precedenti al 1 Gennaio 2021 e successivi al 31 Maggio 2021, seguito da un'ordinamento dell'\texttt{RDD} \textit{somministrazioni-vaccini-summary-latest} in base alla data. Una \emph{trasformazione} di \emph{"reduceByKey"} ha permesso di ottenere il totale di vaccinazioni per ogni mese. Utilizzando un approccio simile al \emph{word count}, sono stati contati i centri riferiti ad una determinata Regione relativi all'\texttt{RDD} \textit{punti-somministrazione-tipologia}. Successivamente, la \emph{"join"} ha permesso di unire i due \texttt{RDD}, utilizzando come chiave la Regione. Il risultato finale \`{e} stato ottenuto dividendo il totale per il numero di giorni del mese di riferimento e per il numero di centri della regione di riferimento, ordinando, infine, il risultato in termini di mese e regione.
-\par In figura~\ref{Query1_DAG} \`{e} possibile osservare lo scheduling di Spark dei passi appena descritti attraverso il \emph{DAG}.\par In figura~\ref{Query1_TL} \`{e} possibile osservare \emph{l'event timeline} che descrive il susseguirsi degli eventi rispetto al tempo, evidenziando il parallelismo di alcune operazioni. 
-\begin{figure}[htbp]
-\includegraphics[scale=0.20]{Screenshot/Query1_DAG.png}
-\caption{DAG query 1}\label{Query1_DAG}
-\label{fig}
-\end{figure}
-\begin{figure}[htbp]
-\includegraphics[scale=0.165]{Screenshot/Query1_timeline.png}
-\caption{Event Timeline query 1}\label{Query1_TL}
-\label{fig}
-\end{figure}
+Per quanto riguarda la prima query, il processamento inizia filtrando i record, in modo da prenderer in considerazione solo quelli relativi al Mar Mediterraneo Occidentale.
+Il processamento tramite \emph{Flink} prosegue sfruttando le
+finestre temporali di tipo \emph{tumbling}
+settimanali e mensili, parallelizzando attraverso il \emph{keyBy} per cella. Su tutte le finestre viene applicata una funzione di \emph{aggregate} personalizzata che permette, al contrario della \emph{process},​ di aggiornare le statistiche della \emph{​window} ogni volta
+che una tupla le viene assegnata; questa accortezza
+consente di evitare picchi di carico dovuti alla computazione in blocco di tutte le tuple assegnate a una finestra al completamento della stessa. In particolare, la funzione di aggregate permette di contare il numero di navi di un certo tipo passanti per una determinata cella nel periodo della finestra. Infine, attraverso una \emph{ProcessWindowFunction} user defined, si \`{e} prelevato il timestamp relativo all'inizio della finestra. Una \emph{map} ha permesso di formattare correttamente i dati da passare al \emph{sink}.
+
 
 \subsection*{\textbf{Query 2}}
-Relativamente alla seconda \emph{query} \`{e} stato utilizzato il file \textit{somministrazioni-vaccini-latest.parquet}, il quale, in seguito al caricamento da \emph{HDFS}, \`{e} stato trasformato in \texttt{JavaPairRDD}. Durante questa fase sono state scartate le colonne irrilevanti ai fini della richiesta. La \emph{trasformazione "filter"} ha permesso l'eliminazione delle entry relative a date precedenti al 1 Febbraio 2021 e successivi al 1 Giugno 2021. Considerando come chiave la tupla \emph{area, data e fascia anagrafica} sono stati sommati i vaccini relativi ad aziende farmaceutiche differenti, ordinando, in seguito, per data. La \emph{trasformazione "groupByKey"} \`{e} stata applicata al fine di raggruppare tutte le tuple \emph{data, numero somministrazioni giornaliere} relative ad una certa regione e fascia anagrafica. Per ogni mese \`{e} stato eseguito una operazione di inserimento di date e valori macanti ed \`{e} stata effettuata \emph{regressione lineare}, in modo da prevedere il numero di donne vaccinate al primo giorno del mese successivo. Quest'ultimo passo ha previsto operazioni di raggruppamento e ordinamento. Il modello di regressione lineare \`{e} stato addestrato attraverso l'implementazione fornita dalla libreria di regressione di \texttt{Apache Commons}.
-\par In figura~\ref{Query2_DAG} e~\ref{Query2_TL} \`{e} possibile osservare rispettivamente il \emph{DAG} e \emph{l'event timeline} relativi alla seconda \emph{query}. 
-\begin{figure}[htbp]
-\includegraphics[scale=0.19]{Screenshot/Query2_DAG.png}
-\caption{DAG query 2}\label{Query2_DAG}
-\label{fig}
-\end{figure}
-\begin{figure}[htbp]
-\includegraphics[scale=0.135]{Screenshot/Query2_timeline.png}
-\caption{Event Timeline query 2}\label{Query2_TL}
-\label{fig}
-\end{figure}
+Per quanto riguarda la seconda query, il processamento tramite \emph{Flink} inizia sfruttando le
+finestre temporali di tipo \emph{tumbling}
+settimanali e mensili, parallelizzando attraverso il \emph{keyBy} per cella. Su tutte le finestre viene applicata una funzione di \emph{aggregate} personalizzata che permette di contare il numero di navi distinte passanti per una determinata cella nel periodo della finestra considerando le fasce orarie 00:00-11:59, 12:00-23:59 e Mar Mediterraneo Occidentale ed Orientale. Infine, attraverso una \emph{ProcessWindowFunction} user defined, si \`{e} prelevato il timestamp relativo all'inizio della finestra. Una finestra di tipo \emph{WindowAll} \`{e} stata necessaria al fine di generare la classifica delle celle pi\`{u} frequentate relative ad una certa zona di mare e una determinata fascia oraria. Una \emph{map} ha permesso di formattare correttamente i dati da passare al \emph{sink}.
+
 
 \subsection*{\textbf{Query 3}}
-L'ultima \emph{query} fa uso dei dati presenti nei file \textit{somministrazioni-vaccini-summary-latest.parquet} e \textit{totale-popolazione.parquet}. In seguito \`{e} stato effettuato il caricamento dei file e la trasformazione in \texttt{JavaPairRDD}. Sui dati relativi a \textit{somministrazioni-vaccini-summary-latest} si \`{e} proceduto al raggruppamento delle tuple \emph{data, numero somministrazioni giornaliere} per ogni regione, questa operazione ha permesso di svolgere regressione lineare su tutti i giorni dal 27 Dicembre 2020 al 31 Maggio 2021, in modo da prevedere il numero di vaccini effettuati in data 1 Giugno 2021. Una \emph{"reduceByKey"}, sulle regioni del medesimo file, ha, invece, permesso di calcolare il totale di vaccini effettuati dal 27 Dicembre 2020 al 31 Maggio 2021. Infine, l'operazione di somma tra le proiezioni e il totale calcolato, consentita dall'operazione di \emph{"join"}, ha decretato il numero totale previsto di vaccinati per regione al 1 Giugno 2021. Il \emph{"join"} tra l'\emph{RDD} in questione e quello contenente il numero totale di abitanti residenti in ciacuna regione (\textit{totale-popolazione}), he reso possibile calcolare la percentuale prevista di vaccinati complessivi al 1 Giugno 2021. Utilizzando due modelli presenti in \emph{MLLib}, \`{e} stato effettuato \emph{clustering} utilizzando i risultati precedenti come dataset, con numero di cluster variabile da 2 a 5. Gli algoritmi utilizzati sono \emph{K-means} e \emph{Bisecting K-means}, mentre per la regressione \`{e} stata utilizzata l'implementazione fornita dalla libreria di regressione di \texttt{Apache Commons}.
-\par In figura~\ref{Query3_DAG} e~\ref{Query3_TL} \`{e} possibile osservare il \emph{DAG} e \emph{l'event timeline} relativi alla terza \emph{query}. In riferimento agli stage 18 e 19 del DAG, \`{e} possibile notare l'uso dell'operazione \texttt{cache} sull'\emph{RDD} filtrato relativo a \textit{somministrazioni-vaccini-summary-latest}, per via dell'impiego indipendente di quest'ultimo negli stage 20 e 21. Come si pu\`{o} inferire dall'\emph{event timeline}, alcuni stage vengono eseguiti parallelamente.  
-\begin{figure}[htbp]
-\includegraphics[scale=0.196]{Screenshot/Query3_DAG.png}
-\caption{DAG query 3}\label{Query3_DAG}
-\label{fig}
-\end{figure}
-\begin{figure}[htbp]
-\includegraphics[scale=0.15]{Screenshot/Query3_timeline.png}
-\caption{Event Timeline query 3}\label{Query3_TL}
-\label{fig}
-\end{figure}
+Per quanto riguarda l'ultima query, il processamento tramite \emph{Flink} inizia sfruttando le
+finestre temporali di tipo \emph{tumbling}
+di una e due ore, parallelizzando attraverso il \emph{keyBy} per tripId. Su tutte le finestre viene applicata una funzione di \emph{aggregate} personalizzata che permette calcolare la distanza percorsa dalla nave in questione, tenendo traccia delle coordinate relative al record precedende, in modo da poter calcolare la distanza euclidea tra i punti e sommarla alla distanza cumulata fino a quel momento. Infine, attraverso una \emph{ProcessWindowFunction} user defined, si \`{e} prelevato il timestamp relativo all'inizio della finestra. Una finestra di tipo \emph{WindowAll} \`{e} stata necessaria al fine di generare la classifica dei viaggi con distanza coperta maggiore nel tempo della finestra. Una \emph{map} ha permesso di formattare correttamente i dati da passare al \emph{sink}.
 
 \section{\textbf{Benchmark}}
-L'esecuzione del progetto e la valutazione delle prestazioni sono state eseguite su \emph{Linux Xubuntu} basato su \emph{Ubuntu 20.04 LTS} virtualizzato tramite \emph{VBox}, \emph{CPU AMD Ryzen 5 3600}, 6 core, 12 thread (di cui 10 assegnati alla VM) e 16 GB di RAM (di cui 9 assegnati alla VM), con archiviazione su \emph{SSD}. \\
+L'esecuzione del progetto e la valutazione delle prestazioni sono state eseguite su \emph{Linux Mint 20.1 Cinnammon}, \emph{CPU AMD Ryzen 5 3600}, 6 core, 12 thread e 16 GB di RAM, con archiviazione su \emph{SSD}. \\
 \begin{table}[htbp]
-\caption{Tempi esecuzione query}
+\caption{Latenze e throughput}
 \begin{center}
     \begin{tabular}{|c|c|c|}
     \hline
-    \textbf{Query} & \textbf{Media} & \textbf{Varianza}  \\ \hline
-    Query 1 & 221.1 & 41.1  \\ \hline
-    Query 2 & 925.2 & 34.2 \\ \hline
-    Query 3 & 2778.4 & 260.3 \\ \hline
-    \multicolumn{3}{l}{$^{\mathrm{*}}$I tempi sono espressi in millisecondi.}
+    \textbf{Query} & \textbf{Throughput (tuple/sec)} & \textbf{Latenza (sec/tupla)}  \\ \hline
+    Query 1 weekly & 330.751 & 0.003  \\ \hline
+    Query 1 monthly & 381.912 & 0.003  \\ \hline
+    Query 2 weekly & 320.114 & 0.003  \\ \hline
+    Query 2 monthly & 344.525 & 0.003  \\ \hline
+    Query 3 one hour & 330.472 & 0.003  \\ \hline
+    Query 3 two hour & 344.525 & 0.003  \\ \hline
+    \multicolumn{3}{l}{$^{\mathrm{*}}$Le metriche si riferiscono alla durata complessiva del replay di 10 secondi}
     \end{tabular}
 \label{tab1}
 \end{center}
 \end{table}
-\par In tabella~\ref{tab1} sono riportati i tempi di processamento delle query. Sono state considerate le performance al netto di startup della \emph{Java Virtual Machine} su cui \emph{Spark} opera e caricamento dei file dall'\emph{HDFS}. I tempi scrittura dei risultati sul \emph{file system distribuito}, invece, sono stati considerati, in modo da rendere effettive tutte le operazioni (trasformazioni) eseguite da \emph{Spark}. Come si pu\`{o} notare, la query 3 risulta molto pi\`{u} lenta delle altre due, che, invece, mostrano risultati migliori. Tale evidenza \`{e} causata dall'inclusione, nel totale, dei tempi di addestramento degli algoritmi di \emph{clustering}, che possono essere osservati in tabella~\ref{tab2}.
-\begin{table}[htbp]
-\caption{Tempi esecuzione clustering}
-\begin{center}
-\begin{tabular}{|c|c|c|c|c|}
-\hline
-\textbf{}&\multicolumn{4}{|c|}{\textbf{Modello}} \\ \hline
-\textbf{Numero} & \multicolumn{2}{|c|}{\textbf{K-means}} & \multicolumn{2}{|c|}{\textbf{Bisecting K-means}} \\ \cline{2-5} 
-\textbf{cluster} & \textbf{Media} & \textbf{Varianza} & \textbf{Media} & \textbf{Varianza} \\ \hline
-2 & 347.3 & 43.6 & 203.2 & 62.4 \\ \hline
-3 & 136.2 & 21.6 & 127.1 & 24.8 \\ \hline
-4 & 153.1 & 39.5 & 148.2 & 25.5 \\ \hline
-5 & 148.9 & 51.9 & 144.3 & 42.1 \\ \hline
-\multicolumn{5}{l}{$^{\mathrm{*}}$I tempi sono espressi in millisecondi.}
-\end{tabular}
-\label{tab2}
-\end{center}
-\end{table}
-\par Sempre dalla tabella~\ref{tab2} \`{e} possibile notare che i tempi di addestramento del primo modello (\emph{K-Means con numero di cluster pari a 2}) risultano superiori a quelli relativi alle successive combinazioni. Questo dovuto al caching effettuato da MLlib dopo la prima esecuzione del modello di clustering, come si evince dalla figura~\ref{Query3_skipped} che raffigura il DAG della seconda esecuzione di tale modello. 
-\begin{table}[htbp]
-\caption{Costo clustering: WSSSE}
-\begin{center}
-\begin{tabular}{|c|c|c|}
-\hline
-\textbf{Numero}&\multicolumn{2}{|c|}{\textbf{Modello}} \\ \cline{2-3}
-\textbf{cluster} & \multicolumn{1}{|c|}{\textbf{K-means}} & \multicolumn{1}{|c|}{\textbf{Bisecting K-means}} \\ \hline
-2 & 0.005392 & 0.005639 \\ \hline
-3 & 0.003129 & 0.002325 \\ \hline
-4 & 0.001469 & 0.001585 \\ \hline
-5 & 0.000751 & 0.000751 \\ \hline
-\end{tabular}
-\label{tab3}
-\end{center}
-\end{table}
-\par In tabella~\ref{tab3}, invece, \`{e} possibile osservare come il \emph{Within Set Sum of Squared Error} medio, per i due algoritmi di \emph{clustering}, decresca al crescere del numero di cluster, anche se questo non \`{e} scontato per via dell'inizializzazione randomica dei centroidi. 
-\begin{figure}[htbp]
-\includegraphics[scale=0.196]{Screenshot/Query3_skipped.png}
-\caption{DAG query 3, secondo run cluster}\label{Query3_skipped}
-\label{fig}
-\end{figure}
-
+\par Per poter eseguire una valutazione sperimentale dei
+benchmark di ogni operatore, \`{e} stata utilizzata, per ognuno
+di essi, una struttura tenente conto sia del numero di tuple
+processate che del tempo impiegato; l'accesso a tale
+struttura \`{e} effettuato, per evitare inconsistenze nel caso di
+aggiornamenti simultanei da parte di operatori replicati,
+mediante l’utilizzo di metodi \texttt{​synchronized​}.
+In tabella~\ref{tab1} sono riportati i throughput e le latenze medie di processamento dei singoli eventi che attraversano la topologia per le tre query. 
 
 \begin{thebibliography}{00}
 \bibitem{b1} \url{https://spark.apache.org/docs/latest/}
