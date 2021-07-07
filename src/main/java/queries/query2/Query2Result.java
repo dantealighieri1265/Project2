@@ -1,13 +1,13 @@
 package queries.query2;
 
 import java.time.LocalDateTime;
-import java.util.Map;
 
 public class Query2Result {
 
     private LocalDateTime startDate;
     private LocalDateTime endDate;
     private String cellId;
+    //dimensioni delle rispettive liste
     private int countWestAM;
     private int countWestPM;
     private int countEstAM;

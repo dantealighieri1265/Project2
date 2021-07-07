@@ -6,7 +6,7 @@ import java.util.Map;
 
 public class Query1Accumulator implements Serializable {
 
-    //mappa (tiponave - count)
+    //mappa (shiptype - n-shiptype)
     private Map<String, Integer> map;
 
     /**
@@ -19,16 +19,6 @@ public class Query1Accumulator implements Serializable {
         this.map.put("70-79", 0);
         this.map.put("others", 0);
     }
-
-    public Query1Accumulator(Map<String, Integer> map) {
-        this.map = map;
-    }
-
-    /*public void add(String shipType, Set<String> tripsSet){
-        for (String tripId : tripsSet) {
-            add(shipType, tripId);
-        }
-    }*/
 
     /**
      *
@@ -47,21 +37,19 @@ public class Query1Accumulator implements Serializable {
     }
 
     /**
-     *
-     * @param acc1 accumulatore su cui mantenere i risultati
      * @param acc2 accumulatore da unire ad acc1
      */
-    public void merge(Query1Accumulator acc1, Query1Accumulator acc2){
+    public void merge(Query1Accumulator acc2){
         for (Map.Entry<String, Integer> entry : acc2.getMap().entrySet()) {
             String shipType = entry.getKey();
             Integer countAcc2 = entry.getValue();
             if (countAcc2 == null) //evita NullPointer
                 countAcc2 = 0;
             //todo potrebbe essere nullo
-            Integer countAcc1 = acc1.getMap().get(shipType);
+            Integer countAcc1 = getMap().get(shipType);
             if (countAcc1 == null) //evita NullPointer
                 countAcc1 = 0;
-            acc1.add(shipType, countAcc1+countAcc2); //aggiornamento
+            add(shipType, countAcc1+countAcc2); //aggiornamento
         }
     }
 

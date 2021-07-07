@@ -6,26 +6,27 @@ import org.apache.lucene.spatial.util.GeoDistanceUtils;
 
 public class Query3Accumulator implements Serializable {
 
-    private double lon;
-    private double lat;
-    private double distance;
+    private double lon;//longitudine della tupla precedente
+    private double lat;//latitudine della tupla precedente
+    private double distance;//distanza calcolata con la formula di Vincenty
 
-
+    /**
+     * Costruttore: genera la distanza da aggiornare
+     */
     public Query3Accumulator(){
         this.lon = Double.NaN;
         this.lat = Double.NaN;
         this.distance = 0.0;
     }
 
-    public static void main(String[] args) {
-
-        double l = GeoDistanceUtils.vincentyDistance(0.0,0.0, 50.0,0.0);
-        System.out.println(l);
-    }
-
+    /**
+     *
+     * @param lon longitudine della tupla considerata
+     * @param lat latitudine della tupla considerata
+     */
     public void add(double lon, double lat) {
         if(!Double.isNaN(getLon()) && !Double.isNaN(getLat())){
-            //todo semplicemente vuole la distanza euclidea forse
+            //todo vedere se è meglio usare vincenty o heavside
             //double linearDistance = GeoDistanceUtils.linearDistance(new double[]{getLon(), getLat()}, new double[]{lon, lat});
             double linearDistance = GeoDistanceUtils.vincentyDistance(getLon(), getLat(), lon, lat);
             setDistance(linearDistance);
@@ -34,8 +35,8 @@ public class Query3Accumulator implements Serializable {
         setLat(lat);
     }
 
-    public void merge(Query3Accumulator acc1, Query3Accumulator acc2){
-        acc1.setDistance(acc1.getDistance()+acc2.getDistance());
+    public void merge(Query3Accumulator acc2){
+        setDistance(getDistance()+acc2.getDistance());
     }
 
     public double getLon() {

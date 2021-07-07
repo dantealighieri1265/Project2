@@ -1,6 +1,5 @@
 package queries.query3;
 
-import queries.query2.Query2Accumulator;
 
 import java.time.LocalDateTime;
 

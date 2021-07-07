@@ -3,9 +3,6 @@ package queries.query1;
 import utils.ShipData;
 import org.apache.flink.api.common.functions.AggregateFunction;
 
-import java.time.Instant;
-import java.time.ZoneId;
-
 public class Query1Aggregator implements AggregateFunction<ShipData, Query1Accumulator, Query1Result> {
 
     @Override
@@ -16,13 +13,12 @@ public class Query1Aggregator implements AggregateFunction<ShipData, Query1Accum
     @Override
     public Query1Accumulator add(ShipData shipData, Query1Accumulator query1Accumulator) {
         query1Accumulator.add(shipData.getShipType(), 1); //aggiornamento dell'accumulator
-        //System.out.println(Instant.ofEpochMilli(shipData.getTimestamp()).atZone(ZoneId.systemDefault()).toLocalDateTime());
         return query1Accumulator;
     }
 
     @Override
     public Query1Accumulator merge(Query1Accumulator acc1, Query1Accumulator acc2) {
-        acc1.merge(acc1, acc2); //fusione degli accumulator
+        acc1.merge(acc2); //merge degli accumulator
         return acc1;
     }
 

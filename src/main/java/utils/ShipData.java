@@ -1,22 +1,16 @@
 package utils;
 
-import org.apache.flink.api.common.eventtime.WatermarkGenerator;
-import org.apache.flink.api.common.eventtime.WatermarkGeneratorSupplier;
-import org.apache.flink.api.common.eventtime.WatermarkOutput;
-
-import java.util.TreeMap;
-
 public class ShipData {
     String tripId;
     String shipId;
-    double lat;
-    double lon;
+    double lat; //latitudine
+    double lon; //longitudine
     long timestamp;
-    String cell;
+    String cell; //cell_id
     String shipType;
-    String sea;
+    String sea;//Mar Occidentale e Orientale
 
-    private final static double lonSeparation = 11.797696;
+    private final static double lonSeaSeparation = 11.797696;
     private static final double minLat = 32.0;
     private static final double maxLat = 45.0;
     private static final int stepsLat = 10;
@@ -40,31 +34,28 @@ public class ShipData {
         this.lat = lat;
         this.cell = evaluateCell(lat, lon);
     }
-    /*public ShipData(String tripId, String shipId, double lon, double lat, long timestamp, int shipType, long dateAsTimestamp) {
-        this.tripId = tripId;
-        this.shipId = shipId;
-        this.lon = lon;
-        this.lat = lat;
-        this.timestamp = timestamp;
-        this.shipType = shipType(shipType);
-        this.cell = evaluateCell(lat, lon);
-        this.dateAsTimestamp = dateAsTimestamp;
-
-    }*/
 
 
+    /**
+     * Calcolo del Mar Occidentale e Orientale a partire dalla longitudine
+     * @param lon
+     * @return
+     */
     private String evaluateSea(double lon) {
-
-        if (lon<getLonSeparation()){
-            //System.out.println(lon+", "+lat+", "+"WEST");
+        if (lon< getLonSeaSeparation()){
             return "WEST";
         } else {
-            //System.out.println(lon+", "+lat+", "+"EST");
             return "EST";
         }
     }
 
 
+    /**
+     * Calcolo della cella a partire da latitudine e longitudine
+     * @param lat
+     * @param lon
+     * @return
+     */
     private String evaluateCell(double lat, double lon){
         char latId = 'A';
         int positionLat = (int)((lat-minLat)/((maxLat-minLat)/stepsLat));
@@ -80,26 +71,12 @@ public class ShipData {
 
         return ""+latId + lonId;
     }
-    public static void main(String[] args) {
-        ShipData shipData = new ShipData(2.171,41.31467);
-        System.out.println(shipData.getCell());
-        /*TreeMap<Integer, Integer> m = new TreeMap<>();
-        m.put(1,1);
-        m.put(2,2);
-        m.put(3,3);
-        m.put(4,4);
-        m.put(5,5);
-        for (int i=0; i<3; i++){
-            String cellId = m.values()
-                    .stream()
-                    .skip(i)
-                    .findFirst().get().toString();
-            System.out.println(cellId);
-        }*/
-    }
 
-
-
+    /**
+     *
+     * @param shipType intero che rappresenta lo ship type
+     * @return Stringa contenente lo ship type
+     */
     private String shipType(int shipType){
         if(shipType == 35){
             return String.valueOf(shipType);
@@ -111,9 +88,6 @@ public class ShipData {
             return "others";
         }
     }
-
-
-
     public String getTripId() {
         return tripId;
     }
@@ -170,8 +144,8 @@ public class ShipData {
         this.shipType = shipType;
     }
 
-    public static double getLonSeparation() {
-        return lonSeparation;
+    public static double getLonSeaSeparation() {
+        return lonSeaSeparation;
     }
 
     public static double getMinLat() {

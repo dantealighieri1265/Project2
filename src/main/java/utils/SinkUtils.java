@@ -8,8 +8,6 @@ import queries.query1.Query1Result;
 import queries.query2.Query2Result;
 import queries.query3.Query3Result;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -45,6 +43,12 @@ public class SinkUtils {
     //todo mettere l'header ai csv
 
     //todo gestire gli zeri
+
+    /**
+     *
+     * @param query1Result Risultati da stampare sul file
+     * @return stringa contente i risultati formattati
+     */
     public static String createCSVQuery1(Query1Result query1Result){
         StringBuilder builder = new StringBuilder();
         builder.append(query1Result.getStartDate());
@@ -60,7 +64,11 @@ public class SinkUtils {
         return builder.toString();
     }
 
-
+    /**
+     *
+     * @param list Risultati da stampare sul file
+     * @return stringa contente i risultati formattati
+     */
     public static String createCSVQuery2(List<TreeMap<Integer, List<Query2Result>>> list){
         StringBuilder builder = new StringBuilder();
         builder.append(list.get(0).firstEntry().getValue().get(0).getStartDate().toLocalDate());
@@ -93,6 +101,42 @@ public class SinkUtils {
         return String.valueOf(builder);
     }
 
+    /**
+     *
+     * @param treeMap Risultati da stampare sul file
+     * @return stringa contente i risultati formattati
+     */
+    public static String createCSVQuery3(TreeMap<Double, List<Query3Result>> treeMap){
+        StringBuilder builder = new StringBuilder();
+        builder.append(treeMap.firstEntry().getValue().get(0).getStartDate());
+        builder.append(",");
+        int count = 0;
+        for (int i=0;;i++){//Solo per scorrere le TreeMap
+            if (count == 5)
+                break;
+            if (i >= treeMap.size()){
+                break;
+            }
+            Optional<List<Query3Result>> first = treeMap.values()
+                    .stream()
+                    .skip(i)
+                    .findFirst();
+            if (first.isPresent()) {
+                for (Query3Result result: first.get()){
+                    if (count == 5)
+                        break;
+                    count++;
+                    builder.append(result.getTripId());
+                    builder.append(",");
+                    builder.append(result.getDistance());
+                    builder.append(",");
+                }
+            }
+        }
+        builder.deleteCharAt(builder.length()-1);
+        return String.valueOf(builder);
+    }
+
     private static void rankingBuilder(List<TreeMap<Integer, List<Query2Result>>> list, int index, StringBuilder builder){
         boolean atLest = false;
         int count = 0;
@@ -121,59 +165,5 @@ public class SinkUtils {
         }
         if (atLest)
             builder.deleteCharAt(builder.length()-1);
-    }
-
-
-    public static String createCSVQuery3(TreeMap<Double, List<Query3Result>> treeMap){
-        StringBuilder builder = new StringBuilder();
-        /*builder.append("timestamp");
-        builder.append(",");
-        builder.append("trip_1");
-        builder.append(",");
-        builder.append("rating_1");
-        builder.append(",");
-        builder.append("trip_2");
-        builder.append(",");
-        builder.append("rating_2");
-        builder.append(",");
-        builder.append("trip_3");
-        builder.append(",");
-        builder.append("rating_3");
-        builder.append(",");
-        builder.append("trip_4");
-        builder.append(",");
-        builder.append("rating_4");
-        builder.append(",");
-        builder.append("trip_5");
-        builder.append(",");
-        builder.append("rating_5");
-        builder.append("\n");*/
-        builder.append(treeMap.firstEntry().getValue().get(0).getStartDate());
-        builder.append(",");
-        int count = 0;
-        for (int i=0;;i++){//Solo per scorrere le TreeMap
-            if (count == 5)
-                break;
-            if (i >= treeMap.size()){
-                break;
-            }
-            Optional<List<Query3Result>> first = treeMap.values()
-                    .stream()
-                    .skip(i)
-                    .findFirst();
-            if (first.isPresent()) {
-                for (Query3Result result: first.get()){
-                    if (count == 5)
-                        break;
-                    count++;
-                    builder.append(result.getTripId());
-                    builder.append(",");
-                    builder.append(result.getDistance());
-                    builder.append(",");
-                }
-            }
-        }
-        builder.deleteCharAt(builder.length()-1);
-        return String.valueOf(builder);
     }
 }

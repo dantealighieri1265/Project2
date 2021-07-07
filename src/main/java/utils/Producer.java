@@ -1,11 +1,8 @@
 package utils;
 
-import org.apache.kafka.clients.admin.AdminClient;
-import org.apache.kafka.clients.admin.NewTopic;
-import org.apache.kafka.clients.producer.*;
-import org.apache.kafka.common.errors.TopicExistsException;
-import org.apache.kafka.common.serialization.LongSerializer;
-import org.apache.kafka.common.serialization.StringSerializer;
+
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerRecord;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -18,14 +15,23 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 
 
 public class Producer {
     static ClassLoader loader = Thread.currentThread().getContextClassLoader();
     private static final String CONFIG = "config.properties";
     private static long firstTimestamp = 0;
+    private static final String COMMA_DELIMITER = ",";
+    private static final long TOTAL_MILL_TIME = getReplayConfig();
+    public static final SimpleDateFormat[] dateFormats = {new SimpleDateFormat("dd/MM/yy HH:mm"),
+            new SimpleDateFormat("dd-MM-yy HH:mm")};
+    private static final String FILE_NAME = "prj2_dataset.csv";
+    private static String FIRST_JANUARY = "01/01";
 
+    /**
+     *
+     * @return time replay config
+     */
     public static int getReplayConfig() {
         InputStream config_file = loader.getResourceAsStream(CONFIG);
         Properties props = new Properties();
@@ -35,30 +41,6 @@ public class Producer {
             e.printStackTrace();
         }
         return Integer.parseInt(props.getProperty("replay_time_milli"));
-    }
-    private static final String COMMA_DELIMITER = ",";
-    private static final long TOTAL_MILL_TIME = getReplayConfig();
-    public static final SimpleDateFormat[] dateFormats = {new SimpleDateFormat("dd/MM/yy HH:mm"),
-            new SimpleDateFormat("dd-MM-yy HH:mm")};
-    private static final String FILE_NAME = "prj2_dataset.csv";
-    private static String FIRST_JANUARY = "01/01";
-
-
-    public static void main(String[] args) {
-        Instant start = Instant.now();
-        TreeMap<Long, List<String>> records = retrieve_file();
-        //calculateOffset(firstTimestamp);
-        /*System.out.println(records.values().size());
-        System.out.println(new Date(records.firstKey())+", "+new Date(records.lastKey()));
-        System.out.println(records.firstKey() +", "+records.lastKey()+", "+(records.lastKey()-records.firstKey())/1000/60/60/24);
-        System.out.println(records.firstKey() +", "+records.lastKey()+", "+(records.lastKey()-records.firstKey()));*/
-        /*for (List<String> l: records.values()){
-            System.out.println(l);
-        }*/
-
-        kafka_injector(records);
-        Instant end = Instant.now();
-        System.out.println("Injection completed in " + Duration.between(start, end).toMillis() + "ms");
     }
 
     private static void calculateOffset(long firstTimestamp) {
@@ -84,9 +66,13 @@ public class Producer {
         props.put("offset",offset);
     }
 
-    public static TreeMap<Long, List<String>> retrieve_file(){
+    /**
+     * Ogni riga del dataset viene aggiunta ad una tree-map usando come chiave il timestamp.
+     * L'ordinamento viene effettuato dalla tree-map
+     * @return tree-map contenente le righe ordinate per timestamp
+     */
+    public static TreeMap<Long, List<String>> retrieve_dataset_line(){
         TreeMap<Long, List<String>> records = new TreeMap<>();
-        TreeMap<String, Integer> l = new TreeMap<>();
         try (BufferedReader br = new BufferedReader(new FileReader(FILE_NAME))) {
             String line;
             boolean header = true;
@@ -97,10 +83,7 @@ public class Producer {
                     header = false;
                     continue;
                 }
-
-
                 String[] values = line.split(COMMA_DELIMITER);
-                l.put(values[0], 1);
                 String timestamp = values[7];
                 Long long_timestamp = null;
                 
@@ -120,21 +103,22 @@ public class Producer {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        //System.out.println(l.keySet()+", "+l.size());
         return records;
     }
 
+    /**
+     * Calcolo del tempo che deve intercorrere tra una tupla e l'altra ed invio dati
+     * @param records tree-map contenente le righe ordinate per timestamp
+     */
     public static void kafka_injector(TreeMap<Long, List<String>> records){
         Properties props = KafkaProperties.getProducerProperties("Producer");
-        //KafkaProperties.createTopic(KafkaProperties.TOPIC, props);
         org.apache.kafka.clients.producer.Producer<Long, String> producer = new KafkaProducer<>(props);
         Long key_prev = null;
-        int line = 0;
         double time_unit = (double) TOTAL_MILL_TIME / (double)(records.lastKey() - records.firstKey());
         for (Map.Entry<Long, List<String>> entry : records.entrySet()) {
             List<String> value = entry.getValue();
             Long key = entry.getKey();
-            long sleep = 0;
+            long sleep;
             if (key_prev != null) {
                  sleep = (long) ((key - key_prev) * time_unit);
                 try {
@@ -145,22 +129,23 @@ public class Producer {
             }
 
             for (String val: value){
-                line++;
-                long finalSleep = sleep;
-                int finalLine = line;
                 producer.send(new ProducerRecord<>(KafkaProperties.TOPIC,0, key, key, val), (m, e) -> {
                     if (e != null) {
                         e.printStackTrace();
-                    } else {
-                        /*System.out.printf("line: "+ finalLine +" sleep: "+ finalSleep+" Key: "+key+" Value: "+value +" Produced record to topic " +
-                                "%s partition [%d] @ offset %d%n", m.topic(), m.partition(), m.offset());*/
                     }
                 });
             }
             key_prev = key;
         }
-        //producer.close(Duration.ofMinutes(6));
         producer.flush();
+    }
+
+    public static void main(String[] args) {
+        Instant start = Instant.now();
+        TreeMap<Long, List<String>> records = retrieve_dataset_line();
+        kafka_injector(records);
+        Instant end = Instant.now();
+        System.out.println("Injection completed in " + Duration.between(start, end).toMillis() + "ms");
     }
 
 

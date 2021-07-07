@@ -12,18 +12,18 @@ public class Query2Aggregator implements AggregateFunction<ShipData, Query2Accum
 
     @Override
     public Query2Accumulator add(ShipData shipData, Query2Accumulator query2Accumulator) {
-        query2Accumulator.add(shipData.getShipId(), shipData.getSea(), shipData.getTimestamp());
+        query2Accumulator.add(shipData.getShipId(), shipData.getSea(), shipData.getTimestamp());//aggiornamento dell'accumulator
         return query2Accumulator;
     }
 
     @Override
     public Query2Result getResult(Query2Accumulator query2Accumulator) {
-        return new Query2Result(query2Accumulator);
+        return new Query2Result(query2Accumulator);//restituzione dei risultati
     }
 
     @Override
     public Query2Accumulator merge(Query2Accumulator query2Accumulator, Query2Accumulator acc2) {
-        query2Accumulator.merge(acc2);
+        query2Accumulator.merge(acc2);//merge degli accumulator
         return query2Accumulator;
     }
 

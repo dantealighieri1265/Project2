@@ -12,6 +12,7 @@ public class Query3SortProcess extends ProcessAllWindowFunction<Query3Result,
     public void process(Context context, Iterable<Query3Result> iterable,
                         Collector<TreeMap<Double, List<Query3Result>>> collector) {
 
+        //treemap per effettuare l'ordinamento
         TreeMap<Double, List<Query3Result>> ranking = new TreeMap<>(Collections.reverseOrder());
 
         for (Query3Result result: iterable){

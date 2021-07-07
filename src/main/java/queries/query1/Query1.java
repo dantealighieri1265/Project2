@@ -1,5 +1,6 @@
 package queries.query1;
 
+import benchmarks.BenchmarkFlinkSink;
 import benchmarks.BenchmarkMap;
 import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.api.common.functions.RichMapFunction;
@@ -46,21 +47,20 @@ public class Query1 {
      *
      * @param dataStreamNoFilter DataStream in ingresso su cui eseguire il processamento
      */
-
     public static void run(DataStream<ShipData> dataStreamNoFilter){
 
-
-
         DataStream<ShipData> dataStream = dataStreamNoFilter //filtraggio Mediterraneo Occidentale
-                .filter((FilterFunction<ShipData>) shipData -> shipData.getLon() < ShipData.getLonSeparation());
+                .filter((FilterFunction<ShipData>) shipData -> shipData.getLon() < ShipData.getLonSeaSeparation());
 
-
+        // Definizione sink
         StreamingFileSink<String> sinkWeekly = SinkUtils.createStreamingFileSink(SinkUtils.QUERY1_OUTPUT_WEEKLY);
         StreamingFileSink<String> sinkMonthly = SinkUtils.createStreamingFileSink(SinkUtils.QUERY1_OUTPUT_MONTHLY);
         StreamingFileSink<String> sinkWeeklyMetrics = SinkUtils.createStreamingFileSink(SinkUtils.QUERY1_OUTPUT_WEEKLY_BENCHMARK);
         StreamingFileSink<String> sinkMonthlyMetrics = SinkUtils.createStreamingFileSink(SinkUtils.QUERY1_OUTPUT_MONTHLY_BENCHMARK);
 
-        DataStream<String> dataStreamWeeklyOutput=dataStream.keyBy(ShipData::getCell).window(TumblingEventTimeWindows.of(Time.days(7), Time.minutes(3648)))
+        //datastream per processamento settimanale
+        DataStream<String> dataStreamWeeklyOutput=dataStream.keyBy(ShipData::getCell)
+                .window(TumblingEventTimeWindows.of(Time.days(7), Time.minutes(3648)))
                 .aggregate(new Query1Aggregator(), new Query1Process()) //accumulazione dei dati e conteggio per finestra
                 .map(SinkUtils::createCSVQuery1); //calcolo media e generazione risultati
 
@@ -72,9 +72,10 @@ public class Query1 {
                 props, FlinkKafkaProducer.Semantic.EXACTLY_ONCE)).name("q1_weekly_kafka");
         //generazione dei file di output
         dataStreamWeeklyOutput.addSink(sinkWeekly).name("q1_weekly").setParallelism(1);
+        //generazione benchmark
         dataStreamWeeklyOutput.map(new BenchmarkMap()).addSink(sinkWeeklyMetrics).name("q1_weekly_bench").setParallelism(1);
 
-
+        //datastream per processamento mensile
         DataStream<String> dataStreamMonthlyOutput=dataStream.keyBy(ShipData::getCell).window(TumblingEventTimeWindows.of(Time.days(28)))
                 .aggregate(new Query1Aggregator(), new Query1Process()) //accumulazione dei dati e conteggio per finestra
                 .map(SinkUtils::createCSVQuery1); //calcolo media e generazione risultati
@@ -86,8 +87,9 @@ public class Query1 {
                 props, FlinkKafkaProducer.Semantic.EXACTLY_ONCE)).name("q1_monthly_kafka");
         //generazione dei file di output
         dataStreamMonthlyOutput.addSink(sinkMonthly).name("q1_monthly").setParallelism(1);
+        //generazione benchmark
         dataStreamMonthlyOutput.map(new BenchmarkMap()).addSink(sinkMonthlyMetrics).name("q1_monthly_bench").setParallelism(1);
-
+        //dataStreamMonthlyOutput.addSink(new BenchmarkFlinkSink());
     }
 
 }

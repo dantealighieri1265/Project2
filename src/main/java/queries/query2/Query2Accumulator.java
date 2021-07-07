@@ -2,11 +2,8 @@ package queries.query2;
 
 import java.io.Serializable;
 import java.time.*;
-import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class Query2Accumulator implements Serializable {
 
@@ -15,6 +12,9 @@ public class Query2Accumulator implements Serializable {
     private List<String> shipIdsEstAM;
     private List<String> shipIdsEstPM;
 
+    /**
+     * Costruttore: genera le liste da aggiornare
+     */
     public Query2Accumulator(){
         this.shipIdsWestAM = new ArrayList<>();
         this.shipIdsWestPM = new ArrayList<>();
@@ -22,20 +22,20 @@ public class Query2Accumulator implements Serializable {
         this.shipIdsEstPM = new ArrayList<>();
     }
     //todo POTREBBE DIMINUIRE LA LATENZA E THROUGHPUT
-    public static void main(String[] args) {
-        LocalDateTime localDateTime = Instant.ofEpochMilli(1432055580000L).atZone(ZoneId.systemDefault()).toLocalDateTime();
-        LocalDateTime noon = LocalDateTime.of(localDateTime.toLocalDate(), LocalTime.NOON);
-        /*System.out.println(localDateTime);
-        System.out.println(noon);*/
-    }
 
+    /**
+     *
+     * @param shipId stringa contenente l'id della tratta considerata
+     * @param sea stringa contenente l'indicazione del Mare attraversato
+     * @param date timestamp relativo alla tupla considerata
+     */
     public void add(String shipId, String sea, long date){
         LocalDateTime localDateTime = Instant.ofEpochMilli(date).atZone(ZoneId.systemDefault()).toLocalDateTime();
         LocalDateTime noon = LocalDateTime.of(localDateTime.toLocalDate(), LocalTime.NOON);
         LocalDateTime midnight = LocalDateTime.of(localDateTime.toLocalDate(), LocalTime.MIDNIGHT);
 
-
         if (sea.equals("WEST")){
+            //verifica l'orario in cui la nave attraversa la cella del Mar Occidentale
             if ((localDateTime.isEqual(midnight) || localDateTime.isAfter(midnight)) && localDateTime.isBefore(noon)){
                 if (!shipIdsWestAM.contains(shipId)){
                     shipIdsWestAM.add(shipId);
@@ -46,6 +46,7 @@ public class Query2Accumulator implements Serializable {
                 }
             }
         } else {
+            //verifica l'orario in cui la nave attraversa la cella del Mar Orientale
             if ((localDateTime.isEqual(midnight) || localDateTime.isAfter(midnight)) && localDateTime.isBefore(noon)){
                 if (!shipIdsEstAM.contains(shipId)){
                     shipIdsEstAM.add(shipId);
@@ -59,7 +60,11 @@ public class Query2Accumulator implements Serializable {
 
     }
 
+    /**
+     * @param acc accumulatore da unire ad acc1
+     */
     public void merge(Query2Accumulator acc){
+        //aggiornamento liste
         for (String val: acc.getShipIdsWestAM()){
             if (!this.shipIdsWestAM.contains(val)){
                 this.shipIdsWestAM.add(val);

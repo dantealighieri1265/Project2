@@ -21,49 +21,26 @@ import java.util.Properties;
 
 public class QueriesStart {
 
-    /*public static class Query1Thread extends Thread {
-
-        public void run(DataStream<ShipData> dataStream){
-            System.out.println("MyThread running");
-            Query1.run(dataStream);
-        }
-    }
-
-    public static class Query2Thread extends Thread {
-
-        public void run(DataStream<ShipData> dataStream){
-            System.out.println("MyThread running");
-            Query2.run(dataStream);
-        }
-    }
-
-    public static class Query3Thread extends Thread {
-
-        public void run(DataStream<ShipData> dataStream){
-            System.out.println("MyThread running");
-            Query3.run(dataStream);
-        }
-    }*/
-
     public static void main(String[] args) {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-        Properties props = KafkaProperties.getConsumerProperties("Query2Consumer");
+        Properties props = KafkaProperties.getConsumerProperties("Query2Consumer");//consumer properties
 
         FlinkKafkaConsumer<String> consumer = new FlinkKafkaConsumer<>(KafkaProperties.TOPIC,
                 new SimpleStringSchema(), props);
+        //definizione timestamp e watermark
         consumer.assignTimestampsAndWatermarks(WatermarkStrategy.forBoundedOutOfOrderness(Duration.ofMillis(10*1000)));
         //consumer.assignTimestampsAndWatermarks(WatermarkStrategy.withIdleness(Duration.ofMillis(15*1000)));
 
         DataStream<ShipData> dataStream = env
                 .addSource(consumer)
                 .map((MapFunction<String, ShipData>) s -> {
-                    String[] values = s.split(",");
+                    String[] values = s.split(","); //split dataset line
                     String dateString = values[7];
                     Long timestamp = null;
                     for (SimpleDateFormat dateFormat : Producer.dateFormats) {
                         try {
-                            timestamp = dateFormat.parse(dateString).getTime();
-                            //System.out.println("timestamp: "+new Date(timestamp));
+                            timestamp = dateFormat.parse(dateString).getTime();                            //System.out.println("timestamp: "+new Date(timestamp));
+
                             break;
                         } catch (ParseException ignored) {
                         }
@@ -72,6 +49,7 @@ public class QueriesStart {
                         throw new NullPointerException();
                     return new ShipData(values[0], Integer.parseInt(values[1]), Double.parseDouble(values[3]),
                             Double.parseDouble(values[4]), timestamp, values[10]);
+                    //filter sull'area specificata dalla traccia
                 }).filter((FilterFunction<ShipData>) shipData -> shipData.getLon() >= ShipData.getMinLon() &&
                         shipData.getLon() <= ShipData.getMaxLon() && shipData.getLat() >= ShipData.getMinLat() &&
                         shipData.getLat() <= ShipData.getMaxLat());
@@ -79,12 +57,6 @@ public class QueriesStart {
         Query1.run(dataStream);
         Query2.run(dataStream);
         Query3.run(dataStream);
-        /*Query1Thread query1 = new Query1Thread();
-        query1.start();
-        Query2Thread query2 = new Query2Thread();
-        query2.start();
-        Query3Thread query3 = new Query3Thread();
-        query3.start();*/
 
         try {
             env.execute("Queries");

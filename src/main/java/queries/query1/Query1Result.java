@@ -8,7 +8,7 @@ import java.util.Map;
  */
 public class Query1Result {
 
-    private Map<String, Integer> map; //(tipo nave - count)
+    private Map<String, Integer> map; //mappa (shiptype - n-shiptype)
     private LocalDateTime startDate;
     private LocalDateTime endDate;
     private String cellId;
@@ -21,23 +21,8 @@ public class Query1Result {
         this.endDate = endDate;
     }
 
-    public Query1Result() {
-    }
-
-    /*public Query1Outcome(Map<String, Set<String>> typeMapInput){
-        this.map = new HashMap<>();
-        for(String shipType: typeMapInput.keySet()){
-            this.map.put(shipType, typeMapInput.get(shipType).size());
-        }
-    }*/
-
     public Query1Result(Map<String, Integer> map){
         this.map = map;
-    }
-
-    public Query1Result(Map<String, Integer> map, LocalDateTime startDate) {
-        this.map = map;
-        this.startDate = startDate;
     }
 
     public Map<String, Integer> getMap() {
