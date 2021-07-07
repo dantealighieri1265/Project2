@@ -1,0 +1,23 @@
+q1_weekly
+Mean throughput: 0.04159817928941712
+Mean latency: 24.03951367781155
+
+q1_montly
+Mean throughput: 0.02998696219035202
+Mean latency: 33.34782608695652
+
+q2_weekly
+Mean throughput: 0.001038961038961039
+Mean latency: 962.5
+
+q2_monthly
+Mean throughput: 4.3840420868040335E-4
+Mean latency: 2281.0
+
+q3_one
+Mean throughput: 0.20656652931011565
+Mean latency: 4.841055341055341
+
+q3_two
+Mean throughput: 0.10471344402785217
+Mean latency: 9.549872122762148

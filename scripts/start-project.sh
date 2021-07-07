@@ -18,6 +18,7 @@ kafka-topics.sh --create --topic query2_weekly_output --zookeeper localhost:2181
 kafka-topics.sh --create --topic query3_one_hour_output --zookeeper localhost:2181 --replication-factor 2 --partitions 1
 kafka-topics.sh --create --topic query3_two_hour_output --zookeeper localhost:2181 --replication-factor 2 --partitions 1
 
+gnome-terminal --geometry=50x15+910+540 -- bash -c "echo Consumer. CTRL+C to stop.;java -cp target/SABD_Project2-0.0.1-SNAPSHOT-jar-with-dependencies.jar utils.Consumer;exec bash"
 
 flink run --parallelism 12 -d --class "queries.QueriesStart" ~/Scrivania/Project2/target/SABD_Project2-0.0.1-SNAPSHOT-jar-with-dependencies.jar
 

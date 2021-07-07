@@ -19,6 +19,8 @@ kafka-topics.sh --create --topic query3_one_hour_output --zookeeper localhost:21
 kafka-topics.sh --create --topic query3_two_hour_output --zookeeper localhost:2181 --replication-factor 2 --partitions 1
 
 
+gnome-terminal --geometry=50x15+935+540 -- bash -c "echo Consumer. CTRL+C to stop.;java -cp target/SABD_Project2-0.0.1-SNAPSHOT-jar-with-dependencies.jar utils.Consumer;exec bash"
+
 flink run --parallelism 12 -d --class "queries.QueriesStart" ~/Scrivania/Project2/target/SABD_Project2-0.0.1-SNAPSHOT-jar-with-dependencies.jar
 gnome-terminal --geometry=100x15-1+1 -- bash -c "echo Query1OutputMonthly;kafka-console-consumer.sh --topic query1_monthly_output --from-beginning --bootstrap-server localhost:9092,localhost:9093,localhost:9094;exec bash"
 gnome-terminal --geometry=100x15+1+1 -- bash -c "echo Query1OutputWeekly;kafka-console-consumer.sh --topic query1_weekly_output --from-beginning --bootstrap-server localhost:9092,localhost:9093,localhost:9094;exec bash"

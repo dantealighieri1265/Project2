@@ -1,0 +1,120 @@
+package utils;
+
+import org.apache.kafka.clients.consumer.*;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.common.protocol.types.Field;
+import org.apache.kafka.common.serialization.IntegerDeserializer;
+import org.apache.kafka.common.serialization.StringDeserializer;
+
+import java.io.*;
+import java.time.Duration;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
+
+public class Consumer {
+
+    public static class ConsumerThread extends Thread {
+
+        String topic;
+        String filename;
+        public ConsumerThread(String topic, String filename){
+            this.topic = topic;
+            this.filename = filename;
+        }
+        public void run(){
+            Consumer.consumer(topic, filename, true);
+        }
+    }
+
+    static ClassLoader loader = Thread.currentThread().getContextClassLoader();
+
+    public static void consumer(String topic, String output, boolean firstLap){
+        InputStream kafka_file = loader.getResourceAsStream("kafka.properties");
+        Properties props = new Properties();
+        try {
+            props.load(kafka_file);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "flink");
+        // exactly once semantic
+        props.put(ConsumerConfig.ISOLATION_LEVEL_CONFIG, "read_committed");
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+        org.apache.kafka.clients.consumer.Consumer<String, String> consumer = new KafkaConsumer<>(props);
+        consumer.subscribe(Collections.singletonList(topic));
+
+        try {
+            while (true) {
+                ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(1000));
+                if (!records.isEmpty()) {
+                    File file = new File(output);
+
+                    if (!file.exists()) {
+                        // crea il file se non esiste
+                        file.createNewFile();
+                    }
+
+                    FileWriter writer = new FileWriter(file, true);
+                    BufferedWriter bw = new BufferedWriter(writer);
+                    if (firstLap){
+                        String header = insertHeader(topic);
+                        bw.append(header);
+                        bw.append("\n");
+
+                        firstLap=false;
+                    }
+                    for (ConsumerRecord<String, String> record : records) {
+                        bw.append(record.value());
+                        bw.append("\n");
+
+                    }
+                    bw.close();
+                    writer.close();
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            consumer.close();
+        }
+    }
+
+    private static String insertHeader(String topic) {
+        StringBuilder builder = new StringBuilder();
+        switch (topic){
+            case KafkaProperties.QUERY1_WEEKLY_TOPIC:
+            case KafkaProperties.QUERY1_MONTHLY_TOPIC:
+                builder.append("timestamp").append(",").append("id_cella").append(",").append("ship_t35").append(",")
+                        .append("avg_t35").append(",").append("ship_t_60_69").append(",").append("avg_60_69")
+                        .append(",").append("ship_t_70_79").append(",").append("avg_70_79").append(",")
+                        .append("ship_t_others").append(",").append("avg_others");
+                break;
+            case KafkaProperties.QUERY2_WEEKLY_TOPIC:
+            case KafkaProperties.QUERY2_MONTHLY_TOPIC:
+                builder.append("timestamp").append(",").append("id_cella").append(",").append("slot_a").append(",")
+                        .append("rank_a").append(",").append("slot_p").append(",").append("rank_p");
+                break;
+            case KafkaProperties.QUERY3_ONE_HOUR_TOPIC:
+            case KafkaProperties.QUERY3_TWO_HOUR_TOPIC:
+                builder.append("timestamp").append(",").append("trip_1").append(",").append("rating_1").append(",")
+                        .append("trip_2").append(",").append("rating_2").append(",").append("trip_3").append(",")
+                        .append("rating_3").append(",").append("trip_4").append(",").append("rating_4").append(",")
+                        .append("trip_5").append(",").append("rating_5");
+                break;
+        }
+        return builder.toString();
+
+    }
+
+    public static void main(String[] args) {
+        for (int i = 0; i < KafkaProperties.LIST_TOPICS.length; i++) {
+            ConsumerThread consumer = new ConsumerThread(KafkaProperties.LIST_TOPICS[i],
+                    SinkUtils.LIST_OUTPUT[i]);
+            consumer.start();
+        }
+
+    }
+}

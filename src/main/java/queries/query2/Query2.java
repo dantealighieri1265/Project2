@@ -1,5 +1,6 @@
 package queries.query2;
 
+import benchmarks.BenchmarkFlinkSink;
 import benchmarks.BenchmarkMap;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.streaming.api.datastream.DataStream;
@@ -33,7 +34,7 @@ public class Query2 {
 
         //todo si potrebbbe raggruppare direttamente per sea all'inizio
         //datastream per processamento settimanale
-        DataStream<String> dataStreamWeeklyOutput=dataStream.keyBy(ShipData::getCell).window(TumblingEventTimeWindows.of(Time.days(7))).
+        DataStream<String> dataStreamWeeklyOutput=dataStream.keyBy(ShipData::getCell).window(TumblingEventTimeWindows.of(Time.days(7), Time.minutes(3648))).
                 aggregate(new Query2Aggregator(), new Query2Process()).
                 windowAll(TumblingEventTimeWindows.of(Time.days(7))).process(new Query2SortProcess()).
                 map((MapFunction<List<TreeMap<Integer, List<Query2Result>>>, String>) SinkUtils::createCSVQuery2);
@@ -45,12 +46,13 @@ public class Query2 {
                         new ProducerRecord<>(KafkaProperties.QUERY2_WEEKLY_TOPIC, s.getBytes(StandardCharsets.UTF_8)),
                 props, FlinkKafkaProducer.Semantic.EXACTLY_ONCE)).name("q2_weekly_kafka");
         //generazione dei file di output
-        dataStreamWeeklyOutput.addSink(sinkWeekly).name("q2_weekly").setParallelism(1);
+        //dataStreamWeeklyOutput.addSink(sinkWeekly).name("q2_weekly").setParallelism(1);
         //generazione benchmark
-        dataStreamWeeklyOutput.map(new BenchmarkMap()).addSink(sinkWeeklyMetrics).name("q2_weekly_bench").setParallelism(1);
+        //dataStreamWeeklyOutput.map(new BenchmarkMap()).addSink(sinkWeeklyMetrics).name("q2_weekly_bench").setParallelism(1);
+        //dataStreamWeeklyOutput.addSink(new BenchmarkFlinkSink());
 
         //datastream per processamento mensile
-        DataStream<String> dataStreamMonthlyOutput=dataStream.keyBy(ShipData::getCell).window(TumblingEventTimeWindows.of(Time.days(30))).
+        DataStream<String> dataStreamMonthlyOutput=dataStream.keyBy(ShipData::getCell).window(TumblingEventTimeWindows.of(Time.days(28), Time.minutes(23808))).
                 aggregate(new Query2Aggregator(), new Query2Process()).
                 windowAll(TumblingEventTimeWindows.of(Time.days(30))).process(new Query2SortProcess()).
                 map((MapFunction<List<TreeMap<Integer, List<Query2Result>>>, String>) SinkUtils::createCSVQuery2);
@@ -61,9 +63,10 @@ public class Query2 {
                         new ProducerRecord<>(KafkaProperties.QUERY2_MONTHLY_TOPIC, s.getBytes(StandardCharsets.UTF_8)),
                 props, FlinkKafkaProducer.Semantic.EXACTLY_ONCE)).name("q2_monthly_kafka");
         //generazione dei file di output
-        dataStreamMonthlyOutput.addSink(sinkMonthly).name("q2_monthly").setParallelism(1);
+        //dataStreamMonthlyOutput.addSink(sinkMonthly).name("q2_monthly").setParallelism(1);
         //generazione benchmark
-        dataStreamMonthlyOutput.map(new BenchmarkMap()).addSink(sinkMonthlyMetrics).name("q2_monthly_bench").setParallelism(1);
+        //dataStreamMonthlyOutput.map(new BenchmarkMap()).addSink(sinkMonthlyMetrics).name("q2_monthly_bench").setParallelism(1);
+        //dataStreamMonthlyOutput.addSink(new BenchmarkFlinkSink());
     }
 
 

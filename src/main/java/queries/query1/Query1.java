@@ -1,6 +1,5 @@
 package queries.query1;
 
-import benchmarks.BenchmarkFlinkSink;
 import benchmarks.BenchmarkMap;
 import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.api.common.functions.RichMapFunction;
@@ -71,12 +70,13 @@ public class Query1 {
                         new ProducerRecord<>(KafkaProperties.QUERY1_WEEKLY_TOPIC, s.getBytes(StandardCharsets.UTF_8)),
                 props, FlinkKafkaProducer.Semantic.EXACTLY_ONCE)).name("q1_weekly_kafka");
         //generazione dei file di output
-        dataStreamWeeklyOutput.addSink(sinkWeekly).name("q1_weekly").setParallelism(1);
+        //dataStreamWeeklyOutput.addSink(sinkWeekly).name("q1_weekly").setParallelism(1);
+        //dataStreamWeeklyOutput.addSink(new BenchmarkFlinkSink());
         //generazione benchmark
-        dataStreamWeeklyOutput.map(new BenchmarkMap()).addSink(sinkWeeklyMetrics).name("q1_weekly_bench").setParallelism(1);
+        //dataStreamWeeklyOutput.map(new BenchmarkMap()).addSink(sinkWeeklyMetrics).name("q1_weekly_bench").setParallelism(1);
 
         //datastream per processamento mensile
-        DataStream<String> dataStreamMonthlyOutput=dataStream.keyBy(ShipData::getCell).window(TumblingEventTimeWindows.of(Time.days(28)))
+        DataStream<String> dataStreamMonthlyOutput=dataStream.keyBy(ShipData::getCell).window(TumblingEventTimeWindows.of(Time.days(28), Time.minutes(23808)))
                 .aggregate(new Query1Aggregator(), new Query1Process()) //accumulazione dei dati e conteggio per finestra
                 .map(SinkUtils::createCSVQuery1); //calcolo media e generazione risultati
 
@@ -86,9 +86,9 @@ public class Query1 {
                         new ProducerRecord<>(KafkaProperties.QUERY1_MONTHLY_TOPIC, s.getBytes(StandardCharsets.UTF_8)),
                 props, FlinkKafkaProducer.Semantic.EXACTLY_ONCE)).name("q1_monthly_kafka");
         //generazione dei file di output
-        dataStreamMonthlyOutput.addSink(sinkMonthly).name("q1_monthly").setParallelism(1);
+        //dataStreamMonthlyOutput.addSink(sinkMonthly).name("q1_monthly").setParallelism(1);
         //generazione benchmark
-        dataStreamMonthlyOutput.map(new BenchmarkMap()).addSink(sinkMonthlyMetrics).name("q1_monthly_bench").setParallelism(1);
+        //dataStreamMonthlyOutput.map(new BenchmarkMap()).addSink(sinkMonthlyMetrics).name("q1_monthly_bench").setParallelism(1);
         //dataStreamMonthlyOutput.addSink(new BenchmarkFlinkSink());
     }
 

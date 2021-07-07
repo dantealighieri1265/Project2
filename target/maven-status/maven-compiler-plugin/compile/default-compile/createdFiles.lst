@@ -9,9 +9,11 @@ queries/query3/Query3SortProcess.class
 queries/query1/Query1Result.class
 utils/Producer.class
 queries/query3/Query3.class
+utils/Consumer$ConsumerThread.class
 queries/query3/Query3Accumulator.class
 utils/KafkaProperties.class
 queries/query3/Query3Aggregator.class
+utils/Consumer.class
 queries/query1/Query1$MyMapper.class
 utils/SinkUtils.class
 queries/query3/Query3Result.class

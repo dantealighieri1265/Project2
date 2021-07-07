@@ -18,6 +18,8 @@ public class KafkaProperties {
     public static final String QUERY2_MONTHLY_TOPIC = "query2_monthly_output";
     public static final String QUERY3_ONE_HOUR_TOPIC = "query3_one_hour_output";
     public static final String QUERY3_TWO_HOUR_TOPIC = "query3_two_hour_output";
+    public static final String[] LIST_TOPICS = {QUERY1_WEEKLY_TOPIC, QUERY1_MONTHLY_TOPIC, QUERY2_WEEKLY_TOPIC,
+            QUERY2_MONTHLY_TOPIC, QUERY3_ONE_HOUR_TOPIC, QUERY3_TWO_HOUR_TOPIC};
     static ClassLoader loader = Thread.currentThread().getContextClassLoader();
     private static final String CONFIG = "kafka.properties";
     public static String TOPIC = "query";

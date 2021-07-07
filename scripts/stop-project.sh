@@ -1,4 +1,5 @@
 #!/bin/bash
+sh delete-directories.sh
 cd ..
 cd docker || return
 docker-compose down

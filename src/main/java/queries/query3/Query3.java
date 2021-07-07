@@ -29,7 +29,7 @@ public class Query3 {
 
         //todo capire bene cosa intende per tempo reale
         //datastream per processamento ogni ora
-        DataStream<String> dataStreamOneHourOutput=dataStream.keyBy(ShipData::getTripId).window(TumblingEventTimeWindows.of(Time.hours(1))).
+        DataStream<String> dataStreamOneHourOutput=dataStream.keyBy(ShipData::getTripId).window(TumblingEventTimeWindows.of(Time.hours(1), Time.minutes(48))).
                 aggregate(new Query3Aggregator(), new Query3Process()).
                 windowAll(TumblingEventTimeWindows.of(Time.hours(1))).process(new Query3SortProcess()).
                 map((MapFunction<TreeMap<Double, List<Query3Result>>, String>) SinkUtils::createCSVQuery3);
@@ -41,13 +41,13 @@ public class Query3 {
                         new ProducerRecord<>(KafkaProperties.QUERY3_ONE_HOUR_TOPIC, s.getBytes(StandardCharsets.UTF_8)),
                 props, FlinkKafkaProducer.Semantic.EXACTLY_ONCE)).name("q3_one_hour_kafka");
         //generazione dei file di output
-        dataStreamOneHourOutput.addSink(sinkOneHour).name("q3_one_hour").setParallelism(1);
+        //dataStreamOneHourOutput.addSink(sinkOneHour).name("q3_one_hour").setParallelism(1);
         //generazione benchmark
-        dataStreamOneHourOutput.map(new BenchmarkMap()).addSink(sinkOneHourMetrics).name("q3_one_hour_bench").setParallelism(1);
-        dataStreamOneHourOutput.addSink(new BenchmarkFlinkSink());
+        //dataStreamOneHourOutput.map(new BenchmarkMap()).addSink(sinkOneHourMetrics).name("q3_one_hour_bench").setParallelism(1);
+        //dataStreamOneHourOutput.addSink(new BenchmarkFlinkSink());
 
         //datastream per processamento ogni due ore
-        DataStream<String> dataStreamTwoHourOutput=dataStream.keyBy(ShipData::getTripId).window(TumblingEventTimeWindows.of(Time.hours(2))).
+        DataStream<String> dataStreamTwoHourOutput=dataStream.keyBy(ShipData::getTripId).window(TumblingEventTimeWindows.of(Time.hours(2), Time.minutes(48))).
                 aggregate(new Query3Aggregator(), new Query3Process()).
                 windowAll(TumblingEventTimeWindows.of(Time.hours(2))).process(new Query3SortProcess()).
                 map((MapFunction<TreeMap<Double, List<Query3Result>>, String>) SinkUtils::createCSVQuery3);
@@ -58,9 +58,11 @@ public class Query3 {
                         new ProducerRecord<>(KafkaProperties.QUERY3_TWO_HOUR_TOPIC, s.getBytes(StandardCharsets.UTF_8)),
                 props, FlinkKafkaProducer.Semantic.EXACTLY_ONCE)).name("q3_two_hour_kafka");
         //generazione dei file di output
-        dataStreamTwoHourOutput.addSink(sinkTw0Hour).name("q3_two_hour").setParallelism(1);
+        //dataStreamTwoHourOutput.addSink(sinkTw0Hour).name("q3_two_hour").setParallelism(1);
         //generazione benchmark
-        dataStreamTwoHourOutput.map(new BenchmarkMap()).addSink(sinkTwoHourMetrics).name("q3_two_hour_bench").setParallelism(1);
+        //dataStreamTwoHourOutput.map(new BenchmarkMap()).addSink(sinkTwoHourMetrics).name("q3_two_hour_bench").setParallelism(1);
+        //dataStreamTwoHourOutput.addSink(new BenchmarkFlinkSink());
+
     }
 
 }

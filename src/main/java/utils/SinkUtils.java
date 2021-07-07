@@ -14,12 +14,15 @@ import java.util.concurrent.TimeUnit;
 
 public class SinkUtils {
 
-    public static final String QUERY1_OUTPUT_WEEKLY="results/Query1OutputWeekly";
-    public static final String QUERY1_OUTPUT_MONTHLY="results/Query1OutputMonthly";
-    public static final String QUERY2_OUTPUT_WEEKLY="results/Query2OutputWeekly";
-    public static final String QUERY2_OUTPUT_MONTHLY="results/Query2OutputMonthly";
-    public static final String QUERY3_OUTPUT_ONE_HOUR ="results/Query3OutputOneHour";
-    public static final String QUERY3_OUTPUT_TWO_HOUR ="results/Query3OutputTwoHour";
+    public static final String QUERY1_OUTPUT_WEEKLY="results/Query1OutputWeekly.csv";
+    public static final String QUERY1_OUTPUT_MONTHLY="results/Query1OutputMonthly.csv";
+    public static final String QUERY2_OUTPUT_WEEKLY="results/Query2OutputWeekly.csv";
+    public static final String QUERY2_OUTPUT_MONTHLY="results/Query2OutputMonthly.csv";
+    public static final String QUERY3_OUTPUT_ONE_HOUR ="results/Query3OutputOneHour.csv";
+    public static final String QUERY3_OUTPUT_TWO_HOUR ="results/Query3OutputTwoHour.csv";
+
+    public final static String[] LIST_OUTPUT= {QUERY1_OUTPUT_WEEKLY, QUERY1_OUTPUT_MONTHLY, QUERY2_OUTPUT_WEEKLY,
+            QUERY2_OUTPUT_MONTHLY, QUERY3_OUTPUT_ONE_HOUR, QUERY3_OUTPUT_TWO_HOUR};
 
     public static final String QUERY1_OUTPUT_WEEKLY_BENCHMARK="benchmark/Query1OutputWeeklyBenchmark";
     public static final String QUERY1_OUTPUT_MONTHLY_BENCHMARK="benchmark/Query1OutputMonthlyBenchmark";
