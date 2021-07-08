@@ -1,5 +1,7 @@
 #!/bin/bash
-sh delete-directories.sh
+sh delete-files.sh
+sh cancel-job.sh
+
 cd ..
 JOB_ID=$(flink list | grep Queries |sed 's/: /\n/g' | sed -n 2p)
 export JOB_ID
@@ -17,5 +19,6 @@ gnome-terminal --geometry=100x15+1+361 -- bash -c "echo Query2OutputWeekly;kafka
 gnome-terminal --geometry=100x15+1+722 -- bash -c "echo Query3OutputOneHour;kafka-console-consumer.sh --topic query3_one_hour_output --bootstrap-server localhost:9092,localhost:9093,localhost:9094;exec bash"
 gnome-terminal --geometry=100x15-1+722 -- bash -c "echo Query3OutputTwoHour;kafka-console-consumer.sh --topic query3_two_hour_output --bootstrap-server localhost:9092,localhost:9093,localhost:9094;exec bash"
 
+echo "Waiting start producer..."
 sleep 10
 java -cp target/SABD_Project2-0.0.1-SNAPSHOT-jar-with-dependencies.jar utils.Producer

@@ -22,12 +22,23 @@ Lo script `start-project.sh` permette di:
 * Caricare le configurazioni di Flink
 * Creare i topic Kafka
 * Eseguire l'applicazione Flink
+* Eseguire il processo Producer. 
+  
+Lo script `start-project-consumer.sh` permette di:
+* Avviare i servizi (Flink, Kafka)
+* Caricare le configurazioni di Flink
+* Creare i topic Kafka
+* Eseguire l'applicazione Flink
 * Aprire dei terminali connessi ai consumer Kafka
 * Eseguire il processo Producer. 
   
 Lo script `warm-restart-project.sh` riavvia l'applicazione Flink e il Producer. Viene utilizzato a sistema avviato.
 
+Lo script `warm-restart-project-consumer.sh` riavvia l'applicazione Flink, i terminali connessi ai consumer e il Producer. Viene utilizzato a sistema avviato.
+
 Lo script `cancel-job.sh` permette di arrestare il job Flink in esecuzione.
+
+Lo script `delete-files.sh` permette di eliminare tutti i files dei risultati e dei benchmark
 
 Lo script `maven-package.sh` avvia il processo di building e packaging del codice.
  
@@ -36,9 +47,9 @@ Lo script `stop-project.sh` permette, infine, di arrestare tutti i servizi prece
 Al primo avvio del progetto è necessario eseguire il build del progetto, perciò è utile seguire i seguenti passi:
 
 * Avviare lo script `maven-package.sh` nella directory `scripts`
-* Avviare lo script `start-project.sh`
-* Monitorare i terminali dei consumer
-* Collegarsi al seguente indirizzo <http://localhost:8081> per monitorare lo stato di esecuzione dell'applicazione Flink
+* Avviare lo script `start-project.sh` o lo `start-project-consumer.sh`
+* Monitorare eventualmente i terminali dei consumer
+* Collegarsi eventualmente al seguente indirizzo <http://localhost:8081> per monitorare lo stato di esecuzione dell'applicazione Flink
 
 ## Configurazioni
 
@@ -49,10 +60,15 @@ Producer
 * `kafka.properties` nel quale vengono indicati gli indirizzi dei broker Kafka.
 
 ## Struttura dell'applicazione
-L'applicazione si compone di due package `queries` e `utils`. 
+L'applicazione si compone di tre package `queries`, `utils` e `benchmark`. 
 
 Nel primo sono presenti le classi che implementano le query e il main di avvio dell'applicazione.
 
 Il secondo package contiene le classi di utilità, tra cui `ShipData` che permette di creare oggetti ad hoc per la 
 computazione, `SinkUtils` che permette di formattare correttamente i dati in output e `KafkaProperties` che contiene
-i metodi che permettono di recuperare le configurazioni:
+i metodi che permettono di recuperare le configurazioni, `Consumer` che permette di inviare i dati su Kafka, `Producer` 
+che permette di ricevere e scrivere su file i dati da Kafka.
+
+## Directory
+La cartella `Report` contiene la relazione relativa al progetto. Nella cartella `Results` si trovano i risultati delle 
+query, in formato `csv` come richiesto dalla specifica .
