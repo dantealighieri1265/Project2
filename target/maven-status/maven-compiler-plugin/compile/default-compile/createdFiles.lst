@@ -10,8 +10,8 @@ queries/query1/Query1Result.class
 utils/Producer.class
 queries/query3/Query3.class
 utils/Consumer$ConsumerThread.class
-queries/query3/Query3Accumulator.class
 queries/ktm/Query2Result.class
+queries/query3/Query3Accumulator.class
 utils/KafkaProperties.class
 queries/query3/Query3Aggregator.class
 utils/Consumer.class
@@ -19,9 +19,9 @@ queries/query1/Query1$MyMapper.class
 queries/ktm/Query2Accumulator.class
 utils/SinkUtils.class
 queries/query3/Query3Result.class
+queries/ktm/Query2Process.class
 queries/query1/Query1Accumulator.class
 queries/query2/Query2Process.class
-queries/ktm/Query2Process.class
 utils/ShipData.class
 queries/QueriesStart.class
 queries/ktm/Query2Aggregator.class
