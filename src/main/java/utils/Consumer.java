@@ -1,22 +1,18 @@
 package utils;
 
 import org.apache.kafka.clients.consumer.*;
-import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.common.protocol.types.Field;
-import org.apache.kafka.common.serialization.IntegerDeserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 
 import java.io.*;
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import java.util.Properties;
 
 public class Consumer {
-
+    /**
+     * Genera i consumer thread legati ai topic di output
+     */
     public static class ConsumerThread extends Thread {
-
         String topic;
         String filename;
         public ConsumerThread(String topic, String filename){
@@ -30,6 +26,12 @@ public class Consumer {
 
     static ClassLoader loader = Thread.currentThread().getContextClassLoader();
 
+    /**
+     * Funzione eseguita dal thread. Legge dal topic e genera un CSV in uscita
+     * @param topic topic Kafka
+     * @param output path del file CSV
+     * @param firstLap booleano che permette l'inserimento dell'header
+     */
     public static void consumer(String topic, String output, boolean firstLap){
         InputStream kafka_file = loader.getResourceAsStream("kafka.properties");
         Properties props = new Properties();
@@ -82,6 +84,11 @@ public class Consumer {
         }
     }
 
+    /**
+     * Funzione per l'inserimento dell'header nei CSV a seconda del topic da cui il consumer preleva i record
+     * @param topic topic Kafka
+     * @return header
+     */
     private static String insertHeader(String topic) {
         StringBuilder builder = new StringBuilder();
         switch (topic){
@@ -109,6 +116,10 @@ public class Consumer {
 
     }
 
+    /**
+     * Generazione dei thread consumer
+     * @param args void
+     */
     public static void main(String[] args) {
         for (int i = 0; i < KafkaProperties.LIST_TOPICS.length; i++) {
             ConsumerThread consumer = new ConsumerThread(KafkaProperties.LIST_TOPICS[i],

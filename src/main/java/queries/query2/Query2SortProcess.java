@@ -15,7 +15,6 @@ public class Query2SortProcess extends ProcessAllWindowFunction<Query2Result,
     public void process(Context context, Iterable<Query2Result> iterable, Collector<List<TreeMap<Integer,
             List<Query2Result>>>> collector) throws Exception {
 
-        //todo sovrascrive la data di inzio finestra precedente: solo per effttuare un controllo
         Query2Result query2Result = iterable.iterator().next();
         query2Result.setStartDate(Instant.ofEpochMilli(context.window().getStart()).
                 atZone(ZoneId.systemDefault()).toLocalDateTime());

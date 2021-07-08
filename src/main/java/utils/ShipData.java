@@ -8,7 +8,7 @@ public class ShipData {
     long timestamp;
     String cell; //cell_id
     String shipType;
-    String sea;//Mar Occidentale e Orientale
+    String sea;//Mar Mediterraneo Occidentale e Orientale
 
     private final static double lonSeaSeparation = 11.797696;
     private static final double minLat = 32.0;
@@ -38,8 +38,8 @@ public class ShipData {
 
     /**
      * Calcolo del Mar Occidentale e Orientale a partire dalla longitudine
-     * @param lon
-     * @return
+     * @param lon longitudine
+     * @return oriente o occidente
      */
     private String evaluateSea(double lon) {
         if (lon< getLonSeaSeparation()){
@@ -52,9 +52,9 @@ public class ShipData {
 
     /**
      * Calcolo della cella a partire da latitudine e longitudine
-     * @param lat
-     * @param lon
-     * @return
+     * @param lat latitudine
+     * @param lon longitudine
+     * @return cellID
      */
     private String evaluateCell(double lat, double lon){
         char latId = 'A';

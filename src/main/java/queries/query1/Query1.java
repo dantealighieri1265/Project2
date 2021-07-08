@@ -1,13 +1,11 @@
 package queries.query1;
 
-import benchmarks.BenchmarkMap;
 import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.api.common.functions.RichMapFunction;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.dropwizard.metrics.DropwizardMeterWrapper;
 import org.apache.flink.metrics.Meter;
 import org.apache.flink.streaming.api.datastream.DataStream;
-import org.apache.flink.streaming.api.functions.sink.filesystem.StreamingFileSink;
 import org.apache.flink.streaming.api.windowing.assigners.TumblingEventTimeWindows;
 import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer;
@@ -51,12 +49,6 @@ public class Query1 {
         DataStream<ShipData> dataStream = dataStreamNoFilter //filtraggio Mediterraneo Occidentale
                 .filter((FilterFunction<ShipData>) shipData -> shipData.getLon() < ShipData.getLonSeaSeparation());
 
-        // Definizione sink
-        StreamingFileSink<String> sinkWeekly = SinkUtils.createStreamingFileSink(SinkUtils.QUERY1_OUTPUT_WEEKLY);
-        StreamingFileSink<String> sinkMonthly = SinkUtils.createStreamingFileSink(SinkUtils.QUERY1_OUTPUT_MONTHLY);
-        StreamingFileSink<String> sinkWeeklyMetrics = SinkUtils.createStreamingFileSink(SinkUtils.QUERY1_OUTPUT_WEEKLY_BENCHMARK);
-        StreamingFileSink<String> sinkMonthlyMetrics = SinkUtils.createStreamingFileSink(SinkUtils.QUERY1_OUTPUT_MONTHLY_BENCHMARK);
-
         //datastream per processamento settimanale
         DataStream<String> dataStreamWeeklyOutput=dataStream.keyBy(ShipData::getCell)
                 .window(TumblingEventTimeWindows.of(Time.days(7), Time.minutes(3648)))
@@ -69,11 +61,8 @@ public class Query1 {
                 (KafkaSerializationSchema<String>) (s, aLong) ->
                         new ProducerRecord<>(KafkaProperties.QUERY1_WEEKLY_TOPIC, s.getBytes(StandardCharsets.UTF_8)),
                 props, FlinkKafkaProducer.Semantic.EXACTLY_ONCE)).name("q1_weekly_kafka");
-        //generazione dei file di output
-        //dataStreamWeeklyOutput.addSink(sinkWeekly).name("q1_weekly").setParallelism(1);
-        //dataStreamWeeklyOutput.addSink(new BenchmarkFlinkSink());
         //generazione benchmark
-        //dataStreamWeeklyOutput.map(new BenchmarkMap()).addSink(sinkWeeklyMetrics).name("q1_weekly_bench").setParallelism(1);
+        //dataStreamWeeklyOutput.addSink(new BenchmarkSink());
 
         //datastream per processamento mensile
         DataStream<String> dataStreamMonthlyOutput=dataStream.keyBy(ShipData::getCell).window(TumblingEventTimeWindows.of(Time.days(28), Time.minutes(23808)))
@@ -85,11 +74,8 @@ public class Query1 {
                 (KafkaSerializationSchema<String>) (s, aLong) ->
                         new ProducerRecord<>(KafkaProperties.QUERY1_MONTHLY_TOPIC, s.getBytes(StandardCharsets.UTF_8)),
                 props, FlinkKafkaProducer.Semantic.EXACTLY_ONCE)).name("q1_monthly_kafka");
-        //generazione dei file di output
-        //dataStreamMonthlyOutput.addSink(sinkMonthly).name("q1_monthly").setParallelism(1);
         //generazione benchmark
-        //dataStreamMonthlyOutput.map(new BenchmarkMap()).addSink(sinkMonthlyMetrics).name("q1_monthly_bench").setParallelism(1);
-        //dataStreamMonthlyOutput.addSink(new BenchmarkFlinkSink());
+        //dataStreamMonthlyOutput.addSink(new BenchmarkSink());
     }
 
 }

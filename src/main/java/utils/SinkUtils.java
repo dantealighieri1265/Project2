@@ -24,25 +24,6 @@ public class SinkUtils {
     public final static String[] LIST_OUTPUT= {QUERY1_OUTPUT_WEEKLY, QUERY1_OUTPUT_MONTHLY, QUERY2_OUTPUT_WEEKLY,
             QUERY2_OUTPUT_MONTHLY, QUERY3_OUTPUT_ONE_HOUR, QUERY3_OUTPUT_TWO_HOUR};
 
-    public static final String QUERY1_OUTPUT_WEEKLY_BENCHMARK="benchmark/Query1OutputWeeklyBenchmark";
-    public static final String QUERY1_OUTPUT_MONTHLY_BENCHMARK="benchmark/Query1OutputMonthlyBenchmark";
-    public static final String QUERY2_OUTPUT_WEEKLY_BENCHMARK="benchmark/Query2OutputWeeklyBenchmark";
-    public static final String QUERY2_OUTPUT_MONTHLY_BENCHMARK="benchmark/Query2OutputMonthlyBenchmark";
-    public static final String QUERY3_OUTPUT_ONE_HOUR_BENCHMARK ="benchmark/Query3OutputOneHourBenchmark";
-    public static final String QUERY3_OUTPUT_TWO_HOUR_BENCHMARK ="benchmark/Query3OutputTwoHourBenchmark";
-
-    public static StreamingFileSink<String> createStreamingFileSink(String name){
-        return StreamingFileSink
-                .forRowFormat(new Path(name), new SimpleStringEncoder<String>("UTF-8"))
-                .withRollingPolicy(
-                        DefaultRollingPolicy.builder()
-                                .withRolloverInterval(TimeUnit.MINUTES.toMillis(15))
-                                .withInactivityInterval(TimeUnit.MINUTES.toMillis(5))
-                                .withMaxPartSize(1024*1024*1024)
-                                .build())
-                .build();
-    }
-
     //todo mettere l'header ai csv
 
     //todo gestire gli zeri

@@ -21,7 +21,6 @@ public class Query2Accumulator implements Serializable {
         this.shipIdsEstAM = new ArrayList<>();
         this.shipIdsEstPM = new ArrayList<>();
     }
-    //todo POTREBBE DIMINUIRE LA LATENZA E THROUGHPUT
 
     /**
      *

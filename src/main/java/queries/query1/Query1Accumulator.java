@@ -45,7 +45,6 @@ public class Query1Accumulator implements Serializable {
             Integer countAcc2 = entry.getValue();
             if (countAcc2 == null) //evita NullPointer
                 countAcc2 = 0;
-            //todo potrebbe essere nullo
             Integer countAcc1 = getMap().get(shipType);
             if (countAcc1 == null) //evita NullPointer
                 countAcc1 = 0;

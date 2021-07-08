@@ -1,17 +1,14 @@
 package benchmarks;
 
-/**
- * Static counter for benchmark evaluation
- */
-public class SynchronizedCounter {
+public class SynchroPerformances {
 
-	// tuples counter
+	// contatore delle tuple
 	private static long counter = 0L;
-	// first output time
+	// tempo del primo evento
 	private static long startTime;
 
 	/**
-	 * Called when a new observation is seen, updates statistics
+	 * Aggiornato ad ogni nuovo evento raccolto dal sink
 	 */
 	public static synchronized void incrementCounter() {
 		if (counter == 0L) {
@@ -21,7 +18,7 @@ public class SynchronizedCounter {
 		counter++;
 		double currentTime = System.currentTimeMillis() - startTime;
 
-		// prints mean throughput and latency so far evaluated
+		// stampa delle metriche raccolte
 		System.out.println("Mean throughput: " + (counter/currentTime) + "\n" + "Mean latency: " +
 				(currentTime/counter));
 	}

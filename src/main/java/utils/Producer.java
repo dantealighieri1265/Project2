@@ -140,6 +140,10 @@ public class Producer {
         producer.flush();
     }
 
+    /**
+     * Generazione del processo producer
+     * @param args void
+     */
     public static void main(String[] args) {
         Instant start = Instant.now();
         TreeMap<Long, List<String>> records = retrieve_dataset_line();
