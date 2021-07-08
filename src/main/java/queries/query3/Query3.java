@@ -23,7 +23,7 @@ public class Query3 {
         //datastream per processamento ogni ora
         DataStream<String> dataStreamOneHourOutput=dataStream.keyBy(ShipData::getTripId).window(TumblingEventTimeWindows.of(Time.hours(1), Time.minutes(48))).
                 aggregate(new Query3Aggregator(), new Query3Process()).
-                windowAll(TumblingEventTimeWindows.of(Time.hours(1))).process(new Query3SortProcess()).
+                windowAll(TumblingEventTimeWindows.of(Time.hours(1))).aggregate(new Query3SortAggregator()).
                 map((MapFunction<TreeMap<Double, List<Query3Result>>, String>) SinkUtils::createCSVQuery3);
 
         //invio dei risultati su topic kafka
@@ -38,7 +38,7 @@ public class Query3 {
         //datastream per processamento ogni due ore
         DataStream<String> dataStreamTwoHourOutput=dataStream.keyBy(ShipData::getTripId).window(TumblingEventTimeWindows.of(Time.hours(2), Time.minutes(48))).
                 aggregate(new Query3Aggregator(), new Query3Process()).
-                windowAll(TumblingEventTimeWindows.of(Time.hours(2))).process(new Query3SortProcess()).
+                windowAll(TumblingEventTimeWindows.of(Time.hours(2))).aggregate(new Query3SortAggregator()).
                 map((MapFunction<TreeMap<Double, List<Query3Result>>, String>) SinkUtils::createCSVQuery3);
 
         //invio dei risultati su topic kafka

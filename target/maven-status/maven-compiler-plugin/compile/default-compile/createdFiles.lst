@@ -1,3 +1,4 @@
+queries/query3/Query3SortAggregator.class
 queries/query3/Query3Process.class
 queries/query2/Query2Accumulator.class
 queries/ktm/Query2.class
@@ -15,6 +16,7 @@ queries/ktm/Query2Result.class
 utils/KafkaProperties.class
 queries/query3/Query3Aggregator.class
 utils/Consumer.class
+queries/query3/Query3SortAccumulator.class
 queries/query1/Query1$MyMapper.class
 queries/ktm/Query2Accumulator.class
 utils/SinkUtils.class

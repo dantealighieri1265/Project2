@@ -10,6 +10,7 @@
 /home/giuseppe/Scrivania/Project2/src/main/java/queries/query3/Query3Aggregator.java
 /home/giuseppe/Scrivania/Project2/src/main/java/queries/query3/Query3.java
 /home/giuseppe/Scrivania/Project2/src/main/java/queries/query3/Query3Accumulator.java
+/home/giuseppe/Scrivania/Project2/src/main/java/queries/query3/Query3SortAccumulator.java
 /home/giuseppe/Scrivania/Project2/src/main/java/queries/query1/Query1Result.java
 /home/giuseppe/Scrivania/Project2/src/main/java/utils/Producer.java
 /home/giuseppe/Scrivania/Project2/src/main/java/queries/query3/Query3SortProcess.java
@@ -18,6 +19,7 @@
 /home/giuseppe/Scrivania/Project2/src/main/java/benchmarks/SynchroPerformances.java
 /home/giuseppe/Scrivania/Project2/src/main/java/queries/query3/Query3Result.java
 /home/giuseppe/Scrivania/Project2/src/main/java/utils/Consumer.java
+/home/giuseppe/Scrivania/Project2/src/main/java/queries/query3/Query3SortAggregator.java
 /home/giuseppe/Scrivania/Project2/src/main/java/queries/query1/Query1Aggregator.java
 /home/giuseppe/Scrivania/Project2/src/main/java/queries/query2/Query2.java
 /home/giuseppe/Scrivania/Project2/src/main/java/utils/SinkUtils.java

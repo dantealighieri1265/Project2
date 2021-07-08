@@ -2,6 +2,7 @@ package queries.query3;
 
 
 import java.time.LocalDateTime;
+import java.util.TreeMap;
 
 public class Query3Result {
 
@@ -10,6 +11,11 @@ public class Query3Result {
     private String tripId;
     private double distance;
 
+    private TreeMap<Long, String> rankingMap;
+
+    public Query3Result(){
+        this.rankingMap = new TreeMap<>();
+    }
 
     public Query3Result(Query3Accumulator query3Accumulator) {
         this.distance = query3Accumulator.getDistance();
