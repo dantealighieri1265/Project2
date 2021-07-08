@@ -56,6 +56,8 @@ public class QueriesStart {
 
         Query1.run(dataStream);
         Query2.run(dataStream);
+        //queries.ktm.Query2.run(dataStream);
+
         Query3.run(dataStream);
 
         try {

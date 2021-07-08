@@ -1,5 +1,6 @@
-package queries.query2;
+package queries.ktm;
 
+import benchmarks.BenchmarkSink;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.windowing.assigners.TumblingEventTimeWindows;
@@ -21,10 +22,9 @@ public class Query2 {
     public static void run(DataStream<ShipData> dataStream){
         //todo si potrebbbe raggruppare direttamente per sea all'inizio
         //datastream per processamento settimanale
-        DataStream<String> dataStreamWeeklyOutput=dataStream.keyBy(ShipData::getCell).window(TumblingEventTimeWindows.of(Time.days(7), Time.minutes(3648))).
+        DataStream<String> dataStreamWeeklyOutput=dataStream.keyBy(ShipData::getSea).window(TumblingEventTimeWindows.of(Time.days(7), Time.minutes(3648))).
                 aggregate(new Query2Aggregator(), new Query2Process()).
-                windowAll(TumblingEventTimeWindows.of(Time.days(7))).process(new Query2SortProcess()).
-                map((MapFunction<List<TreeMap<Integer, List<Query2Result>>>, String>) SinkUtils::createCSVQuery2);
+                map((MapFunction <Query2Result, String>) SinkUtils::createCSVQuery2);
 
         Properties props = KafkaProperties.getFlinkProducerProperties("query2_output_producer");
         //invio dei risultati su topic kafka
@@ -33,13 +33,12 @@ public class Query2 {
                         new ProducerRecord<>(KafkaProperties.QUERY2_WEEKLY_TOPIC, s.getBytes(StandardCharsets.UTF_8)),
                 props, FlinkKafkaProducer.Semantic.EXACTLY_ONCE)).name("q2_weekly_kafka");
         //generazione benchmark
-        //dataStreamWeeklyOutput.addSink(new BenchmarkSink());
+        dataStreamWeeklyOutput.addSink(new BenchmarkSink());
 
         //datastream per processamento mensile
         DataStream<String> dataStreamMonthlyOutput=dataStream.keyBy(ShipData::getCell).window(TumblingEventTimeWindows.of(Time.days(28), Time.minutes(23808))).
                 aggregate(new Query2Aggregator(), new Query2Process()).
-                windowAll(TumblingEventTimeWindows.of(Time.days(30))).process(new Query2SortProcess()).
-                map((MapFunction<List<TreeMap<Integer, List<Query2Result>>>, String>) SinkUtils::createCSVQuery2);
+                map((MapFunction<Query2Result, String>) SinkUtils::createCSVQuery2);
 
         //invio dei risultati su topic kafka
         dataStreamMonthlyOutput.addSink(new FlinkKafkaProducer<>(KafkaProperties.QUERY2_MONTHLY_TOPIC,

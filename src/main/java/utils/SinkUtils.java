@@ -1,16 +1,12 @@
 package utils;
 
-import org.apache.flink.api.common.serialization.SimpleStringEncoder;
-import org.apache.flink.core.fs.Path;
-import org.apache.flink.streaming.api.functions.sink.filesystem.StreamingFileSink;
-import org.apache.flink.streaming.api.functions.sink.filesystem.rollingpolicies.DefaultRollingPolicy;
 import queries.query1.Query1Result;
 import queries.query2.Query2Result;
 import queries.query3.Query3Result;
 
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class SinkUtils {
 
@@ -149,5 +145,103 @@ public class SinkUtils {
         }
         if (atLest)
             builder.deleteCharAt(builder.length()-1);
+    }
+
+    public static String createCSVQuery2(queries.ktm.Query2Result query2Results) {
+        //(treeAm e treePM)
+        StringBuilder builder = new StringBuilder();
+        builder.append(query2Results.getStartDate());
+
+        final int[] count = {0};
+        if (query2Results.getSea().equals("WEST")){
+            builder.append(",");
+            builder.append("West Mediterranean");
+            builder.append(",");
+            builder.append("AM");
+            builder.append(",");
+            final AtomicBoolean[] atLest = {new AtomicBoolean(false)};
+            query2Results.getTreeMapAM().forEach((key, value) -> {
+
+                for (String cell: value){
+                    if (count[0] == 3)//se ho più di 3 elementi termino la classifica
+                        break;
+                    count[0]++;
+                    atLest[0].set(true);
+                    builder.append(cell);
+                    builder.append("-");
+                }
+
+
+            });
+            if (atLest[0].get())
+                builder.deleteCharAt(builder.length()-1);
+
+
+
+            builder.append(",");
+            builder.append("PM");
+            builder.append(",");
+            count[0] = 0;
+            atLest[0].set(false);
+            query2Results.getTreeMapPM().forEach((key, value) -> {
+                for (String cell: value){
+                    if (count[0] == 3)//se ho più di 3 elementi termino la classifica
+                        break;
+                    count[0]++;
+                    atLest[0].set(true);
+                    builder.append(cell);
+                    builder.append("-");
+                }
+                if (atLest[0].get())
+                    builder.deleteCharAt(builder.length()-1);
+
+            });
+
+
+        }else {
+            builder.append(",");
+            builder.append("Est Mediterranean");
+            builder.append(",");
+            builder.append("AM");
+            builder.append(",");
+            final AtomicBoolean[] atLest = {new AtomicBoolean(false)};
+            query2Results.getTreeMapAM().forEach((key, value) -> {
+
+                for (String cell: value){
+                    if (count[0] == 3)//se ho più di 3 elementi termino la classifica
+                        break;
+                    count[0]++;
+                    atLest[0].set(true);
+                    builder.append(cell);
+                    builder.append("-");
+                }
+
+            });
+            if (atLest[0].get())
+                builder.deleteCharAt(builder.length()-1);
+
+
+            builder.append(",");
+            builder.append("PM");
+            builder.append(",");
+            count[0] = 0;
+            atLest[0].set(false);
+
+            query2Results.getTreeMapPM().forEach((key, value) -> {
+                for (String cell: value){
+                    if (count[0] == 3)//se ho più di 3 elementi termino la classifica
+                        break;
+                    count[0]++;
+                    atLest[0].set(true);
+                    builder.append(cell);
+                    builder.append("-");
+                }
+                if (atLest[0].get())
+                    builder.deleteCharAt(builder.length()-1);
+            });
+
+        }
+
+        return builder.toString();
     }
 }

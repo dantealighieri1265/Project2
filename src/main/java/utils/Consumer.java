@@ -5,8 +5,10 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 
 import java.io.*;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Properties;
+import java.util.Scanner;
 
 public class Consumer {
     /**
@@ -15,12 +17,17 @@ public class Consumer {
     public static class ConsumerThread extends Thread {
         String topic;
         String filename;
+        private static boolean running = true;
+
         public ConsumerThread(String topic, String filename){
             this.topic = topic;
             this.filename = filename;
         }
         public void run(){
             Consumer.consumer(topic, filename, true);
+        }
+        public void stop_thread() {
+            running = false;
         }
     }
 
@@ -49,7 +56,7 @@ public class Consumer {
         consumer.subscribe(Collections.singletonList(topic));
 
         try {
-            while (true) {
+            while (ConsumerThread.running) {
                 ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(1000));
                 if (!records.isEmpty()) {
                     File file = new File(output);
@@ -78,7 +85,6 @@ public class Consumer {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
         } finally {
             consumer.close();
         }
@@ -101,7 +107,7 @@ public class Consumer {
                 break;
             case KafkaProperties.QUERY2_WEEKLY_TOPIC:
             case KafkaProperties.QUERY2_MONTHLY_TOPIC:
-                builder.append("timestamp").append(",").append("id_cella").append(",").append("slot_a").append(",")
+                builder.append("timestamp").append(",").append("sea").append(",").append("slot_a").append(",")
                         .append("rank_a").append(",").append("slot_p").append(",").append("rank_p");
                 break;
             case KafkaProperties.QUERY3_ONE_HOUR_TOPIC:
@@ -120,11 +126,25 @@ public class Consumer {
      * Generazione dei thread consumer
      * @param args void
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
+        ArrayList<ConsumerThread> consumers = new ArrayList<>();
         for (int i = 0; i < KafkaProperties.LIST_TOPICS.length; i++) {
             ConsumerThread consumer = new ConsumerThread(KafkaProperties.LIST_TOPICS[i],
                     SinkUtils.LIST_OUTPUT[i]);
             consumer.start();
+            consumers.add(consumer);
+        }
+        Scanner scanner = new Scanner(System.in);
+        // wait for the user to digit something
+        scanner.next();
+        System.out.println("Sending shutdown signal to consumers");
+        // stop consumers
+        for (ConsumerThread consumer : consumers) {
+            consumer.stop_thread();
+        }
+
+        for (ConsumerThread consumer : consumers) {
+            consumer.join();
         }
 
     }
