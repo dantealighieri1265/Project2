@@ -71,16 +71,17 @@ L'obiettivo di questo progetto \`{e} quello di implementare ed eseguire tre quer
 
 \par La seconda query consiste nel determinare le prime 3 celle per le quali il grado di frequentazione \`{e} pi\`{u} alto, nelle due fascie orarie 00:00-11:59 e 12:00-23:59, Mar Mediterraneo Occidentale ed Orientale. il grado di frequentazione di una cella viene calcolato come il numero di navi diverse che attraversano la cella nella fascia oraria in esame. Sono state utilizzate finestre temporali a 7 giorni e 1 mese.
 
-\par L'ultima query consiste nel determinare le prime 5 tratte per cui la distanza percorsa fino a quel momento \`{e} pi\`{u} alta. Per il calcolo della distanza è stata considerata la distanza euclidea.
+\par L'ultima query consiste nel determinare le prime 5 tratte per cui la distanza percorsa fino a quel momento \`{e} pi\`{u} alta. Per il calcolo della distanza è stata considerata la distanza di Vincenty.
 
 \subsection*{\textbf{Framework}}
 Come \emph{framework} di processamento stream \`{e} stato utilizzato \emph{Apache Flink} che riceve i dati dal sistema di messaging \emph{Apache Kafka}. 
 
 \section{\textbf{Architettura}}
-L'architettura si compone di due container \emph{Docker}, su cui eseguono i servizi di \emph{Apache Zookeeper} e \emph{Apache Kafka} che comunicano tra di loro attraverso la stessa rete, creata appositamente dal servizio \emph{Docker Compose}. Inoltre, sempre sulla stessa macchina, una JVM ospita l'esecuzione di \emph{Apache Flink} e un processo \emph{Java} immette i dati nel sistema di Publish/Subscribe.
+L'architettura si compone di due container \emph{Docker}, su cui eseguono i servizi di \emph{Apache Zookeeper} e \emph{Apache Kafka} che comunicano tra di loro attraverso la stessa rete, creata appositamente dal servizio \emph{Docker Compose}. Inoltre, sempre sulla stessa macchina, una JVM ospita l'esecuzione di \emph{Apache Flink}, un processo \emph{Java} che immette i dati nel sistema di Publish/Subscrib e un Consumer, costituido anch'esso da un processo \emph{Java}, che recupera i risultati delle query dalle topiche.
+\`{E} possibile osservare la struttura dell'architettura in figura~\ref{figura:architettura}.
 
 \begin{figure}[htbp]
-\includegraphics[scale=0.36]{Screenshot/arch.png}
+\includegraphics[scale=0.32]{Screenshot/frameworks_structure.png}
 \caption{Schema dell'architettura}\label{figura:architettura}
 \label{fig}
 \end{figure}
@@ -92,7 +93,7 @@ topiche di Kafka (query) da cui \emph{Flink} recupera i dati. La scrittura sulla
 topica viene effettuata riga per riga a intervalli variabili, proporzionali ai timestamp reali presenti nel dataset, al fine di simulare una
 vera sorgente di dati ​real time ​accelerata. L'ordinamento del dataset \`{e} stato effettuato utilizzando una struttura dati che permette di ordinare all'inserimento dei record, ovvero la \emph{TreeMap}. La gestione di chiavi uguali (timestamp) \`{e} stata effettuata utilizzando come valore della coppia key-value della \emph{TreeMap}, una lista, popolata dai record da inviare, in modo da non perdere occorrenze.
 Per garantire la corretta esecuzione del processamento su
-\emph{Flink} in base all'​ event time,​ \`{e} stato necessario
+\emph{Flink} in base all'event time,​ \`{e} stato necessario
 estrarre la data di occorrenza dell'evento di ogni riga e
 impostarla come ​timestamp della relativa tupla alla
 pubblicazione sulla topica. 
@@ -107,10 +108,10 @@ per la coordinazione, e altri tre​ container con la funzione di
 in input a Flink, due per l'output della prima query (settimanale e
 mensile), due per l'output della seconda ​query (settimanale e mensile) e altrettante per quello della terza query (per un'ora e per due ore). Per incrementare la tolleranza ai guasti, ogni \emph{Kafka ​topic} è impostata per avere un grado di replicazione pari a 2 (una replica \emph{​leader} ed una replica
 \emph{follower}) e, allo stesso tempo, una sola partizione. La scelta
-della singola partizione è dovuta alla necessità di
-mantenere le tuple ordinate all’interno del sistema di
+della singola partizione \`{e} dovuta alla necessit\`{a} di
+mantenere le tuple ordinate all'interno del sistema di
 messaggistica; in \emph{Kafka}, infatti, la garanzie di ordinamento
-sono valide soltanto nell’ambito di una singola partizione.
+sono valide soltanto nell'ambito di una singola partizione.
 
 
 \subsection*{\textbf{Apache Flink}}
@@ -121,18 +122,21 @@ dalla \emph{topica} query in \emph{Kafka}. L'\emph{event time} viene determinato
 devono manipolare al fine di calcolare le statistiche
 richieste.
 Al fine di preprocessare i dati ed eseguire le \emph{query}, viene utilizzato \emph{Apache Flink} in locale, tramite lo script \texttt{\$FLINK\_HOME/bin/flink run}.
+Alla fine del processamento i risultati vengono immessi nuovamente in \emph{Kafka}, sulle topiche sopra citate.
 Di seguito viene mostrata la topologia che sarà
 successivamente descritta più nel dettaglio.
 
+\subsection*{\textbf{Consumer}}
+Il Consumer \`{e} rappresentato da un processo \emph{Java} che genera un numero di thread pari al numero di topiche di uscita del sistema. Tali thread, una volta associati alla topica, recuperano i dati e li scrivono su file in formato CSV, dinamicamente, inserendo l'header. La semantica utilizzata \`{e} exactly once. 
+
 \begin{figure}[htbp]
-\includegraphics[scale=0.16]{Screenshot/Nifi.png}
-\caption{NiFi template}\label{figura:template}
-\label{fig}
+\includegraphics[scale=0.28]{Screenshot/flink_topology.png}
+\caption{Topologia Flink}\label{figura:topology}
 \end{figure}
 
 
 \section{\textbf{Query}}
-\par Al fine di effettuare le query \`{e} stato necessario uno step di preprocessamento. Lo stream in ingresso viene generato utilizzando un consumer che riceve i dati dalla topica \emph{query}. I \emph{record} vengono trasformati in oggetti di tipo \emph{ShipData} contenenti le informazioni necessarie al processamento delle richieste; in particolare viene definita la cella e la sezione del Mar Mediterraneo (Occidentale o Orientale) di appartenenza a partire dalle coordinate. Una operazione di filtraggio assicura che i dati rientrino nella porzione di mare indicata dalla traccia. Lo stream di oggetti \emph{ShipData} in uscita viene, in seguito, dato in ingresso alle topologie di processamento delle query.
+\par Al fine di effettuare le query \`{e} stato necessario uno step di preprocessamento. Lo stream in ingresso viene generato utilizzando un consumer che riceve i dati dalla topica \emph{query}. I \emph{record} vengono trasformati in oggetti di tipo \emph{ShipData} contenenti le informazioni necessarie al processamento delle richieste; in particolare viene definita la cella e la sezione del Mar Mediterraneo (Occidentale o Orientale) di appartenenza a partire dalle coordinate. Una operazione di filtraggio assicura che i dati rientrino nella porzione di mare indicata dalla traccia. Lo stream di oggetti \emph{ShipData} in uscita viene, in seguito, dato in ingresso alle topologie di processamento delle query. Lo schema della topologia \`{e} riportato in figura~\ref{figura:topology}.
 \subsection*{\textbf{Query 1}}
 Per quanto riguarda la prima query, il processamento inizia filtrando i record, in modo da prenderer in considerazione solo quelli relativi al Mar Mediterraneo Occidentale.
 Il processamento tramite \emph{Flink} prosegue sfruttando le
@@ -161,12 +165,12 @@ L'esecuzione del progetto e la valutazione delle prestazioni sono state eseguite
     \begin{tabular}{|c|c|c|}
     \hline
     \textbf{Query} & \textbf{Throughput (tuple/sec)} & \textbf{Latenza (sec/tupla)}  \\ \hline
-    Query 1 weekly & 330.751 & 0.003  \\ \hline
-    Query 1 monthly & 381.912 & 0.003  \\ \hline
-    Query 2 weekly & 320.114 & 0.003  \\ \hline
-    Query 2 monthly & 344.525 & 0.003  \\ \hline
-    Query 3 one hour & 330.472 & 0.003  \\ \hline
-    Query 3 two hour & 344.525 & 0.003  \\ \hline
+    Query 1 weekly & 41.598 & 0.024  \\ \hline
+    Query 1 monthly & 29.987 & 0.033  \\ \hline
+    Query 2 weekly & 1.039 & 0.963  \\ \hline
+    Query 2 monthly & 0.438 & 2.281 \\ \hline
+    Query 3 one hour & 206.567 & 0.00484  \\ \hline
+    Query 3 two hour & 104.713 & 0.00955  \\ \hline
     \multicolumn{3}{l}{$^{\mathrm{*}}$Le metriche si riferiscono alla durata complessiva del replay di 10 secondi}
     \end{tabular}
 \label{tab1}
@@ -179,15 +183,14 @@ processate che del tempo impiegato; l'accesso a tale
 struttura \`{e} effettuato, per evitare inconsistenze nel caso di
 aggiornamenti simultanei da parte di operatori replicati,
 mediante l’utilizzo di metodi \texttt{​synchronized​}.
-In tabella~\ref{tab1} sono riportati i throughput e le latenze medie di processamento dei singoli eventi che attraversano la topologia per le tre query. 
+In tabella~\ref{tab1} sono riportati i throughput e le latenze medie di processamento dei singoli eventi che attraversano la topologia per le tre query. Come si pu\`{o} notare il throughput delle query cresce al diminuire della dimensione della finestra, in linea con quanto ci si aspetti. 
 
 \begin{thebibliography}{00}
-\bibitem{b1} \url{https://spark.apache.org/docs/latest/}
+\bibitem{b1} \url{https://ci.apache.org/projects/flink/flink-docs-release-1.13/}
+\bibitem{b6} \url{https://kafka.apache.org/documentation/}
+\bibitem{b6} \url{https://lucene.apache.org/core/5_5_2/spatial/org/apache/lucene/spatial/util/GeoDistanceUtils.html}
 \bibitem{b2} \url{https://stackoverflow.com/}
-\bibitem{b3} \url{https://nifi.apache.org/}
-\bibitem{b4} \url{https://hadoop.apache.org/docs/stable/}
-\bibitem{b5} \url{http://spark.apache.org/docs/latest/ml-guide.html}
-\bibitem{b6} \url{https://commons.apache.org/proper/commons-math/javadocs/api-3.3/org/apache/commons/math3/stat/regression/SimpleRegression.html}
+
 \end{thebibliography}
 
 \end{document}
