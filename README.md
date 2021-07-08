@@ -22,6 +22,7 @@ Lo script `start-project.sh` permette di:
 * Caricare le configurazioni di Flink
 * Creare i topic Kafka
 * Eseguire l'applicazione Flink
+* Aprire il terminale connesso al consumer Kafka 
 * Eseguire il processo Producer. 
   
 Lo script `start-project-consumer.sh` permette di:
@@ -38,7 +39,7 @@ Lo script `warm-restart-project-consumer.sh` riavvia l'applicazione Flink, i ter
 
 Lo script `cancel-job.sh` permette di arrestare il job Flink in esecuzione.
 
-Lo script `delete-files.sh` permette di eliminare tutti i files dei risultati e dei benchmark
+Lo script `delete-files.sh` permette di eliminare tutti i files dei risultati
 
 Lo script `maven-package.sh` avvia il processo di building e packaging del codice.
  
@@ -66,9 +67,12 @@ Nel primo sono presenti le classi che implementano le query e il main di avvio d
 
 Il secondo package contiene le classi di utilità, tra cui `ShipData` che permette di creare oggetti ad hoc per la 
 computazione, `SinkUtils` che permette di formattare correttamente i dati in output e `KafkaProperties` che contiene
-i metodi che permettono di recuperare le configurazioni, `Consumer` che permette di inviare i dati su Kafka, `Producer` 
+i metodi che permettono di recuperare le configurazioni, `Producer` che permette di inviare i dati su Kafka, `Consumer` 
 che permette di ricevere e scrivere su file i dati da Kafka.
+
+Nel terzo package sono presenti le classi che permetto di valutare le prestazioni in termini di throughput e latenza 
+dell'applicazione.
 
 ## Directory
 La cartella `Report` contiene la relazione relativa al progetto. Nella cartella `Results` si trovano i risultati delle 
-query, in formato `csv` come richiesto dalla specifica .
+query, in formato `csv` come richiesto dalla specifica.

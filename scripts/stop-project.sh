@@ -1,7 +1,7 @@
 #!/bin/bash
 sh cancel-job.sh
+kill "$(cat ../flink-config/pid_values)"
 sh delete-files.sh
-kill $(cat ../flink-config/pid_values)
 cd ..
 cd docker || return
 docker-compose down
